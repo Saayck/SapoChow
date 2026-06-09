@@ -1,11 +1,13 @@
 import uuid
 import enum
 from datetime import datetime
+from app.utils import utcnow
 from typing import Optional
 from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text, Float, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.database.base import Base
+from app.models.topic import Topic
 
 
 class QuestionStatus(str, enum.Enum):
@@ -27,9 +29,9 @@ class Question(Base):
     status: Mapped[QuestionStatus] = mapped_column(SAEnum(QuestionStatus), default=QuestionStatus.DRAFT)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
-    topic: Mapped["Topic"] = relationship("Topic", back_populates="questions")
+    topic: Mapped[Topic] = relationship("Topic", back_populates="questions")
     alternatives: Mapped[list] = relationship("Alternative", back_populates="question", cascade="all, delete-orphan")

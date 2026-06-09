@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from app.utils import utcnow
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -52,5 +53,5 @@ class QuestionRepository:
         return question
 
     async def soft_delete(self, question: Question) -> None:
-        question.deleted_at = datetime.utcnow()
+        question.deleted_at = utcnow()
         await self.db.commit()

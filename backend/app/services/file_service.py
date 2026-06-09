@@ -1,6 +1,7 @@
 import uuid
 import os
 import aiofiles
+import magic
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
@@ -27,7 +28,8 @@ class FileService:
     async def upload(self, file: UploadFile, current_user: User) -> FileResponse:
         """
         Guarda un archivo subido en disco y registra sus metadatos en la BD.
-        Valida el MIME type contra una lista de permitidos y aplica un límite de 10 MB.
+        Detecta el MIME type desde los bytes del archivo (no desde el header del cliente).
+        Aplica un límite de 10 MB.
         El archivo se almacena con un nombre prefijado por UUID para evitar colisiones.
         """
         content = await file.read()
@@ -35,8 +37,9 @@ class FileService:
         if len(content) > MAX_FILE_SIZE:
             raise BadRequestException("File exceeds the 10 MB size limit")
 
-        if file.content_type not in ALLOWED_MIME_TYPES:
-            raise BadRequestException(f"File type '{file.content_type}' is not allowed")
+        detected_mime = magic.from_buffer(content[:2048], mime=True)
+        if detected_mime not in ALLOWED_MIME_TYPES:
+            raise BadRequestException(f"File type '{detected_mime}' is not allowed")
 
         stored_name = f"{uuid.uuid4()}_{file.filename}"
         file_path = os.path.join(settings.UPLOAD_DIR, stored_name)
@@ -50,7 +53,7 @@ class FileService:
             original_name=file.filename,
             stored_name=stored_name,
             file_path=file_path,
-            mime_type=file.content_type,
+            mime_type=detected_mime,
             size_bytes=len(content),
             uploaded_by=current_user.id,
         )

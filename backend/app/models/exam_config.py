@@ -1,9 +1,11 @@
 import uuid
 from datetime import datetime
+from app.utils import utcnow
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.database.base import Base
+from app.models.exam import Exam
 
 
 class ExamConfig(Base):
@@ -17,6 +19,6 @@ class ExamConfig(Base):
     versions_count: Mapped[int] = mapped_column(Integer, default=1)
     shuffle_questions: Mapped[bool] = mapped_column(Boolean, default=True)
     shuffle_alternatives: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
-    exam: Mapped["Exam"] = relationship("Exam", back_populates="config")
+    exam: Mapped[Exam] = relationship("Exam", back_populates="config")

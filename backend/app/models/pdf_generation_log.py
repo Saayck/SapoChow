@@ -1,6 +1,7 @@
 import uuid
 import enum
 from datetime import datetime
+from app.utils import utcnow
 from typing import Optional
 from sqlalchemy import DateTime, ForeignKey, Text, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
@@ -21,4 +22,4 @@ class PDFGenerationLog(Base):
     exam_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("exam_versions.id"), nullable=False)
     status: Mapped[PDFLogStatus] = mapped_column(SAEnum(PDFLogStatus), default=PDFLogStatus.PENDING)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

@@ -15,7 +15,7 @@ async def test_register(client: AsyncClient):
 
 
 async def test_register_duplicate_username(client: AsyncClient):
-    payload = {"username": "dupuser", "email": "dup1@test.com", "password": "pass"}
+    payload = {"username": "dupuser", "email": "dup1@test.com", "password": "pass1234"}
     await client.post("/api/auth/register", json=payload)
     payload["email"] = "dup2@test.com"
     resp = await client.post("/api/auth/register", json=payload)

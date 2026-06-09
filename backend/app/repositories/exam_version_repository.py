@@ -46,4 +46,9 @@ class ExamVersionRepository:
     async def create_alternatives(self, alternatives: List[ExamVersionAlternative]) -> None:
         for a in alternatives:
             self.db.add(a)
+        await self.db.flush()
+
+    async def update(self, version: ExamVersion) -> ExamVersion:
         await self.db.commit()
+        await self.db.refresh(version)
+        return version

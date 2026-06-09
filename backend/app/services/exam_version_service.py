@@ -1,15 +1,16 @@
 import uuid
-from datetime import datetime
-from typing import List
+from typing import List, Dict, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import NotFoundException, BadRequestException
 from app.models.exam_version import ExamVersion, GenerationStatus
+from app.models.question import Question
 from app.models.user import User
 from app.repositories.exam_repository import ExamRepository
 from app.repositories.exam_version_repository import ExamVersionRepository
 from app.repositories.question_repository import QuestionRepository
 from app.schemas.version_schema import ExamVersionResponse, AnswerKeyResponse, GenerateVersionsRequest
 from app.services.shuffle_service import ShuffleService
+from app.utils import utcnow
 
 
 class ExamVersionService:
@@ -32,6 +33,7 @@ class ExamVersionService:
         4. Por cada etiqueta de versión (Versión A, B, C...):
            a. Crea el registro ExamVersion.
            b. Usa ShuffleService para aleatorizar preguntas y alternativas.
+              Con shuffle_questions=True, cada versión muestrea aleatoriamente del pool completo.
            c. Persiste ExamVersionQuestion y ExamVersionAlternative.
            d. Construye y almacena el answer_key JSON.
         """
@@ -43,7 +45,8 @@ class ExamVersionService:
 
         count = data.count if data.count is not None else exam.config.versions_count
 
-        topic_questions = {}
+        # Build full question pools — NOT sliced — so each version can sample independently.
+        topic_pools: Dict[uuid.UUID, Tuple[List[Question], int]] = {}
         for exam_topic in exam.topics:
             questions = await self.question_repo.get_approved_by_topic(exam_topic.topic_id)
             if len(questions) < exam_topic.questions_count:
@@ -51,7 +54,7 @@ class ExamVersionService:
                     f"Topic {exam_topic.topic_id} needs {exam_topic.questions_count} approved questions "
                     f"but only {len(questions)} available"
                 )
-            topic_questions[exam_topic.topic_id] = questions[: exam_topic.questions_count]
+            topic_pools[exam_topic.topic_id] = (questions, exam_topic.questions_count)
 
         labels = [f"Version {chr(65 + i)}" for i in range(count)]
         result = []
@@ -68,7 +71,7 @@ class ExamVersionService:
 
             evqs, evas = self.shuffle_svc.build_version(
                 version=version,
-                topic_questions=topic_questions,
+                topic_pools=topic_pools,
                 shuffle_questions=exam.config.shuffle_questions,
                 shuffle_alternatives=exam.config.shuffle_alternatives,
             )
@@ -78,8 +81,8 @@ class ExamVersionService:
 
             version.answer_key = self.shuffle_svc.build_answer_key(saved_evqs)
             version.generation_status = GenerationStatus.COMPLETED
-            version.generated_at = datetime.utcnow()
-            await self.version_repo.create_alternatives([])
+            version.generated_at = utcnow()
+            version = await self.version_repo.update(version)
 
             result.append(ExamVersionResponse.model_validate(version))
 

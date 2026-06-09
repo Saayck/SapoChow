@@ -1,6 +1,7 @@
 import uuid
 import enum
 from datetime import datetime
+from app.utils import utcnow
 from typing import Optional
 from sqlalchemy import String, DateTime, ForeignKey, Text, Integer, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
@@ -26,5 +27,5 @@ class ImportJob(Base):
     total_imported: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     uploaded_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

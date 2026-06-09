@@ -51,7 +51,7 @@ async def test_reject_multiple_correct_alternatives(client: AsyncClient, auth_he
     assert resp.status_code == 400
 
 
-async def test_approve_question(client: AsyncClient, auth_headers: dict):
+async def test_approve_question(client: AsyncClient, auth_headers: dict, admin_headers: dict):
     topic_id = await _create_topic(client, auth_headers, "Physics4")
     create_resp = await client.post("/api/questions", json={
         "topic_id": topic_id,
@@ -59,12 +59,12 @@ async def test_approve_question(client: AsyncClient, auth_headers: dict):
         "alternatives": FIVE_ALTS,
     }, headers=auth_headers)
     qid = create_resp.json()["id"]
-    resp = await client.post(f"/api/questions/{qid}/approve", headers=auth_headers)
+    resp = await client.post(f"/api/questions/{qid}/approve", headers=admin_headers)
     assert resp.status_code == 200
     assert resp.json()["status"] == "APPROVED"
 
 
-async def test_reject_question(client: AsyncClient, auth_headers: dict):
+async def test_reject_question(client: AsyncClient, auth_headers: dict, admin_headers: dict):
     topic_id = await _create_topic(client, auth_headers, "Physics5")
     create_resp = await client.post("/api/questions", json={
         "topic_id": topic_id,
@@ -72,6 +72,18 @@ async def test_reject_question(client: AsyncClient, auth_headers: dict):
         "alternatives": FIVE_ALTS,
     }, headers=auth_headers)
     qid = create_resp.json()["id"]
-    resp = await client.post(f"/api/questions/{qid}/reject", headers=auth_headers)
+    resp = await client.post(f"/api/questions/{qid}/reject", headers=admin_headers)
     assert resp.status_code == 200
     assert resp.json()["status"] == "REJECTED"
+
+
+async def test_approve_requires_admin(client: AsyncClient, auth_headers: dict):
+    topic_id = await _create_topic(client, auth_headers, "Physics6")
+    create_resp = await client.post("/api/questions", json={
+        "topic_id": topic_id,
+        "statement": "Teacher cannot approve",
+        "alternatives": FIVE_ALTS,
+    }, headers=auth_headers)
+    qid = create_resp.json()["id"]
+    resp = await client.post(f"/api/questions/{qid}/approve", headers=auth_headers)
+    assert resp.status_code == 403

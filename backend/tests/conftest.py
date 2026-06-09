@@ -1,10 +1,12 @@
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.main import app
 from app.database.connection import get_db
 from app.database.base import Base
+from app.models.user import User
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
@@ -46,5 +48,22 @@ async def auth_headers(client: AsyncClient):
         "password": "secret123",
     })
     resp = await client.post("/api/auth/login", json={"username": "testuser", "password": "secret123"})
+    token = resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def admin_headers(client: AsyncClient):
+    await client.post("/api/auth/register", json={
+        "username": "adminuser",
+        "email": "admin@test.com",
+        "password": "admin1234",
+    })
+    async with TestSessionLocal() as session:
+        await session.execute(
+            update(User).where(User.username == "adminuser").values(role="admin")
+        )
+        await session.commit()
+    resp = await client.post("/api/auth/login", json={"username": "adminuser", "password": "admin1234"})
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}

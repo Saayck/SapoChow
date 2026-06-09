@@ -1,18 +1,22 @@
 import uuid
-from pathlib import Path
 from typing import List
 from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.connection import get_db
+from app.database.connection import get_db, AsyncSessionLocal
 from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.schemas.version_schema import ExamVersionResponse, AnswerKeyResponse, GenerateVersionsRequest, PDFStatusResponse
 from app.services.exam_version_service import ExamVersionService
 from app.services.pdf_service import PDFService
-from app.core.exceptions import NotFoundException
 
 router = APIRouter(tags=["versions"])
+
+
+async def _run_pdf_generation(version_id: uuid.UUID) -> None:
+    """Genera el PDF en una sesión de BD independiente para evitar usar la sesión de la request."""
+    async with AsyncSessionLocal() as db:
+        await PDFService(db).generate(version_id)
 
 
 @router.post("/api/exams/{exam_id}/versions", response_model=List[ExamVersionResponse], status_code=201)
@@ -65,7 +69,7 @@ async def generate_pdf(
     if existing:
         return PDFStatusResponse(version_id=version_id, ready=True, pdf_url=f"/api/versions/{version_id}/pdf/download")
 
-    background_tasks.add_task(svc.generate, version_id)
+    background_tasks.add_task(_run_pdf_generation, version_id)
     return PDFStatusResponse(version_id=version_id, ready=False, pdf_url=None)
 
 

@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.connection import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_user, require_admin
 from app.models.user import User
 from app.schemas.question_schema import QuestionCreate, QuestionUpdate, QuestionResponse
 from app.services.question_service import QuestionService
@@ -37,10 +37,10 @@ async def delete_question(question_id: uuid.UUID, db: AsyncSession = Depends(get
 
 
 @router.post("/{question_id}/approve", response_model=QuestionResponse)
-async def approve_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)):
+async def approve_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
     return await QuestionService(db).approve(question_id)
 
 
 @router.post("/{question_id}/reject", response_model=QuestionResponse)
-async def reject_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)):
+async def reject_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
     return await QuestionService(db).reject(question_id)

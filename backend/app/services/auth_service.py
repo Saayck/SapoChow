@@ -29,7 +29,7 @@ class AuthService:
             username=data.username,
             email=data.email,
             password_hash=hash_password(data.password),
-            role=data.role,
+            role="teacher",
         )
         created = await self.repo.create(user)
         return UserResponse.model_validate(created)
