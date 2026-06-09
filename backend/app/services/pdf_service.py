@@ -1,7 +1,5 @@
 import uuid
-import os
 from pathlib import Path
-from datetime import datetime
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -18,10 +16,11 @@ from loguru import logger
 
 from app.core.config import settings
 from app.core.exceptions import NotFoundException, BadRequestException
-from app.models.exam_version import ExamVersion, GenerationStatus
+from app.models.exam_version import ExamVersion
 from app.models.exam_version_question import ExamVersionQuestion
 from app.models.exam_version_alternative import ExamVersionAlternative
-from app.models.pdf_generation_log import PDFGenerationLog, PDFLogStatus
+from app.models.pdf_generation_log import PDFGenerationLog
+from app.enums import GenerationStatus, PDFLogStatus
 
 
 class PDFService:
@@ -31,14 +30,14 @@ class PDFService:
     async def generate(self, version_id: uuid.UUID) -> str:
         version = await self._load_full_version(version_id)
         if not version:
-            raise NotFoundException("Version not found")
-        if version.generation_status != GenerationStatus.COMPLETED:
-            raise BadRequestException("Version is not completed yet")
+            raise NotFoundException("Versión no encontrada")
+        if version.generation_status != GenerationStatus.COMPLETADO:
+            raise BadRequestException("La versión aún no ha sido generada")
 
         log = PDFGenerationLog(
             id=uuid.uuid4(),
             exam_version_id=version_id,
-            status=PDFLogStatus.PENDING,
+            status=PDFLogStatus.PENDIENTE,
         )
         self.db.add(log)
         await self.db.flush()
@@ -46,15 +45,15 @@ class PDFService:
         try:
             output_path = self._render_pdf(version)
             version.pdf_url = output_path
-            log.status = PDFLogStatus.SUCCESS
+            log.status = PDFLogStatus.EXITOSO
             await self.db.commit()
-            logger.info(f"PDF generated for version {version_id}: {output_path}")
+            logger.info(f"PDF generado para versión {version_id}: {output_path}")
             return output_path
         except Exception as exc:
-            log.status = PDFLogStatus.FAILED
+            log.status = PDFLogStatus.FALLIDO
             log.error_message = str(exc)
             await self.db.commit()
-            logger.error(f"PDF generation failed for version {version_id}: {exc}")
+            logger.error(f"Error al generar PDF para versión {version_id}: {exc}")
             raise
 
     def get_pdf_path(self, version_id: uuid.UUID) -> Optional[str]:

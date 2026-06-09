@@ -1,22 +1,15 @@
 import uuid
-import enum
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, DateTime, ForeignKey, Text, Enum as SAEnum, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from app.database.base import Base
+from app.enums import GenerationStatus
 from app.models.exam import Exam
 
 if TYPE_CHECKING:
     from app.models.exam_version_question import ExamVersionQuestion
-
-
-class GenerationStatus(str, enum.Enum):
-    PENDING = "PENDING"
-    PROCESSING = "PROCESSING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
 
 
 class ExamVersion(Base):
@@ -28,7 +21,7 @@ class ExamVersion(Base):
     answer_key: Mapped[Optional[dict]] = mapped_column(JSON().with_variant(JSONB(), "postgresql"), nullable=True)
     latex_source: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     pdf_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    generation_status: Mapped[GenerationStatus] = mapped_column(SAEnum(GenerationStatus), default=GenerationStatus.PENDING)
+    generation_status: Mapped[GenerationStatus] = mapped_column(SAEnum(GenerationStatus), default=GenerationStatus.PENDIENTE)
     generated_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     generated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 

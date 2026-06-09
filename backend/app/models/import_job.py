@@ -1,5 +1,4 @@
 import uuid
-import enum
 from datetime import datetime
 from app.utils import utcnow
 from typing import Optional
@@ -7,13 +6,7 @@ from sqlalchemy import String, DateTime, ForeignKey, Text, Integer, Enum as SAEn
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from app.database.base import Base
-
-
-class ImportStatus(str, enum.Enum):
-    PENDING = "PENDING"
-    PROCESSING = "PROCESSING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
+from app.enums import ImportStatus
 
 
 class ImportJob(Base):
@@ -22,7 +15,7 @@ class ImportJob(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     file_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    status: Mapped[ImportStatus] = mapped_column(SAEnum(ImportStatus), default=ImportStatus.PENDING)
+    status: Mapped[ImportStatus] = mapped_column(SAEnum(ImportStatus), default=ImportStatus.PENDIENTE)
     total_detected: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     total_imported: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

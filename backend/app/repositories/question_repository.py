@@ -1,11 +1,11 @@
 import uuid
-from datetime import datetime
 from app.utils import utcnow
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.models.question import Question, QuestionStatus
+from app.models.question import Question
+from app.enums import QuestionStatus
 
 
 class QuestionRepository:
@@ -33,7 +33,7 @@ class QuestionRepository:
             select(Question)
             .where(
                 Question.topic_id == topic_id,
-                Question.status == QuestionStatus.APPROVED,
+                Question.status == QuestionStatus.APROBADO,
                 Question.deleted_at == None,
                 Question.is_active == True,
             )

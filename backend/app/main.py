@@ -9,13 +9,12 @@ from app.routers import auth_router, topic_router, question_router, exam_router,
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("SapoChow API started")
+    logger.info("SapoChow API iniciada")
     yield
-    logger.info("SapoChow API shutting down")
-
+    logger.info("SapoChow API detenida")
 
 app = FastAPI(
-    title="SapoChow Exam System",
+    title="SapoChow Sistema de Exámenes",
     description="API para gestión de exámenes virtuales: banco de preguntas, versiones aleatorizadas y exportación PDF.",
     version="1.0.0",
     docs_url="/docs",
@@ -38,7 +37,6 @@ app.include_router(exam_router.router)
 app.include_router(version_router.router)
 app.include_router(import_router.router)
 app.include_router(file_router.router)
-
 
 @app.get("/health", tags=["health"])
 async def health():

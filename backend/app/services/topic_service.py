@@ -19,7 +19,7 @@ class TopicService:
     async def get_by_id(self, topic_id: uuid.UUID) -> TopicResponse:
         topic = await self.repo.get_by_id(topic_id)
         if not topic:
-            raise NotFoundException("Topic not found")
+            raise NotFoundException("Tema no encontrado")
         return TopicResponse.model_validate(topic)
 
     async def create(self, data: TopicCreate, current_user: User) -> TopicResponse:
@@ -30,7 +30,7 @@ class TopicService:
     async def update(self, topic_id: uuid.UUID, data: TopicUpdate) -> TopicResponse:
         topic = await self.repo.get_by_id(topic_id)
         if not topic:
-            raise NotFoundException("Topic not found")
+            raise NotFoundException("Tema no encontrado")
         for field, value in data.model_dump(exclude_none=True).items():
             setattr(topic, field, value)
         updated = await self.repo.update(topic)
@@ -39,5 +39,5 @@ class TopicService:
     async def delete(self, topic_id: uuid.UUID) -> None:
         topic = await self.repo.get_by_id(topic_id)
         if not topic:
-            raise NotFoundException("Topic not found")
+            raise NotFoundException("Tema no encontrado")
         await self.repo.soft_delete(topic)

@@ -7,4 +7,4 @@ def parse_uuid(value: str) -> uuid.UUID:
     try:
         return uuid.UUID(value)
     except ValueError:
-        raise BadRequestException(f"Invalid UUID: {value}")
+        raise BadRequestException(f"UUID inválido: {value}")

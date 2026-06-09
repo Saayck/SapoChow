@@ -26,7 +26,7 @@ async def test_create_question_with_five_alternatives(client: AsyncClient, auth_
     }, headers=auth_headers)
     assert resp.status_code == 201
     assert len(resp.json()["alternatives"]) == 5
-    assert resp.json()["status"] == "DRAFT"
+    assert resp.json()["status"] == "BORRADOR"
 
 
 async def test_reject_less_than_five_alternatives(client: AsyncClient, auth_headers: dict):
@@ -61,7 +61,7 @@ async def test_approve_question(client: AsyncClient, auth_headers: dict, admin_h
     qid = create_resp.json()["id"]
     resp = await client.post(f"/api/questions/{qid}/approve", headers=admin_headers)
     assert resp.status_code == 200
-    assert resp.json()["status"] == "APPROVED"
+    assert resp.json()["status"] == "APROBADO"
 
 
 async def test_reject_question(client: AsyncClient, auth_headers: dict, admin_headers: dict):
@@ -74,7 +74,7 @@ async def test_reject_question(client: AsyncClient, auth_headers: dict, admin_he
     qid = create_resp.json()["id"]
     resp = await client.post(f"/api/questions/{qid}/reject", headers=admin_headers)
     assert resp.status_code == 200
-    assert resp.json()["status"] == "REJECTED"
+    assert resp.json()["status"] == "RECHAZADO"
 
 
 async def test_approve_requires_admin(client: AsyncClient, auth_headers: dict):

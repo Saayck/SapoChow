@@ -2,7 +2,8 @@ import uuid
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import NotFoundException
-from app.models.import_job import ImportJob, ImportStatus
+from app.models.import_job import ImportJob
+from app.enums import ImportStatus
 from app.models.user import User
 from app.repositories.import_job_repository import ImportJobRepository
 from app.schemas.import_schema import ImportJobResponse
@@ -19,19 +20,20 @@ class ImportService:
     async def get_by_id(self, job_id: uuid.UUID) -> ImportJobResponse:
         job = await self.repo.get_by_id(job_id)
         if not job:
-            raise NotFoundException("Import job not found")
+            raise NotFoundException("Trabajo de importación no encontrado")
         return ImportJobResponse.model_validate(job)
 
     async def create_job(self, filename: str, file_type: str, current_user: User) -> ImportJobResponse:
         """
         Registra un nuevo job de importación en estado PENDING.
         El parseo real del archivo ocurre de forma asíncrona (futura tarea en background).
+        El job inicia en estado PENDIENTE.
         """
         job = ImportJob(
             id=uuid.uuid4(),
             filename=filename,
             file_type=file_type,
-            status=ImportStatus.PENDING,
+            status=ImportStatus.PENDIENTE,
             uploaded_by=current_user.id,
         )
         created = await self.repo.create(job)

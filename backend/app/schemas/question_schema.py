@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel
-from app.models.question import QuestionStatus
+from app.enums import QuestionStatus
 from app.schemas.alternative_schema import AlternativeCreate, AlternativeResponse
 
 

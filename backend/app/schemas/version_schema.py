@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
-from app.models.exam_version import GenerationStatus
+from app.enums import GenerationStatus
 
 
 class GenerateVersionsRequest(BaseModel):

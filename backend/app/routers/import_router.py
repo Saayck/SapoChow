@@ -17,8 +17,9 @@ async def import_questions(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    file_type = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "unknown"
-    return await ImportService(db).create_job(file.filename, file_type, user)
+    filename = file.filename or "unknown"
+    file_type = filename.rsplit(".", 1)[-1].lower() if "." in filename else "unknown"
+    return await ImportService(db).create_job(filename, file_type, user)
 
 
 @router.get("/jobs", response_model=List[ImportJobResponse])

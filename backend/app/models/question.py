@@ -1,5 +1,4 @@
 import uuid
-import enum
 from datetime import datetime
 from app.utils import utcnow
 from typing import Optional
@@ -7,14 +6,8 @@ from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text, Float, Enum 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.database.base import Base
+from app.enums import QuestionStatus
 from app.models.topic import Topic
-
-
-class QuestionStatus(str, enum.Enum):
-    DRAFT = "DRAFT"
-    REVIEWED = "REVIEWED"
-    APPROVED = "APPROVED"
-    REJECTED = "REJECTED"
 
 
 class Question(Base):
@@ -26,7 +19,7 @@ class Question(Base):
     latex_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     points: Mapped[float] = mapped_column(Float, default=1.0)
-    status: Mapped[QuestionStatus] = mapped_column(SAEnum(QuestionStatus), default=QuestionStatus.DRAFT)
+    status: Mapped[QuestionStatus] = mapped_column(SAEnum(QuestionStatus), default=QuestionStatus.BORRADOR)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

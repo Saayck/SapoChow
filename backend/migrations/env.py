@@ -7,6 +7,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.database.base import Base
+from app.core.config import settings
 
 # Importar todos los modelos para que Alembic los detecte en autogenerate
 import app.models.user
@@ -32,9 +33,8 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url,
+        url=settings.DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -43,7 +43,7 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection):
+def do_run_migrations(connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
@@ -51,7 +51,7 @@ def do_run_migrations(connection):
 
 async def run_migrations_online() -> None:
     connectable = create_async_engine(
-        config.get_main_option("sqlalchemy.url"),
+        settings.DATABASE_URL,
         poolclass=pool.NullPool,
     )
     async with connectable.connect() as connection:

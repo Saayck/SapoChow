@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 from app.utils import utcnow
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-from app.models.import_job import ImportStatus
+from app.enums import ImportStatus
 
 
 class ImportJobResponse(BaseModel):

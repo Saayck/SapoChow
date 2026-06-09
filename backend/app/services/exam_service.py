@@ -23,7 +23,7 @@ class ExamService:
     async def get_by_id(self, exam_id: uuid.UUID) -> ExamResponse:
         exam = await self.repo.get_by_id(exam_id)
         if not exam:
-            raise NotFoundException("Exam not found")
+            raise NotFoundException("Examen no encontrado")
         return ExamResponse.model_validate(exam)
 
     async def create(self, data: ExamCreate, current_user: User) -> ExamResponse:
@@ -71,7 +71,7 @@ class ExamService:
     async def update(self, exam_id: uuid.UUID, data: ExamUpdate) -> ExamResponse:
         exam = await self.repo.get_by_id(exam_id)
         if not exam:
-            raise NotFoundException("Exam not found")
+            raise NotFoundException("Examen no encontrado")
         for field, value in data.model_dump(exclude_none=True).items():
             setattr(exam, field, value)
         updated = await self.repo.update(exam)
@@ -80,7 +80,7 @@ class ExamService:
     async def delete(self, exam_id: uuid.UUID) -> None:
         exam = await self.repo.get_by_id(exam_id)
         if not exam:
-            raise NotFoundException("Exam not found")
+            raise NotFoundException("Examen no encontrado")
         await self.repo.soft_delete(exam)
 
     async def _validate_config(self, data: ExamCreate) -> None:
@@ -95,16 +95,16 @@ class ExamService:
 
         if len(topics) != cfg.total_topics:
             raise BadRequestException(
-                f"Expected {cfg.total_topics} topics but got {len(topics)}"
+                f"Se esperaban {cfg.total_topics} temas pero se recibieron {len(topics)}"
             )
 
         total = sum(t.questions_count for t in topics)
         if total != cfg.total_questions:
             raise BadRequestException(
-                f"Sum of questions_count ({total}) must equal total_questions ({cfg.total_questions})"
+                f"La suma de questions_count ({total}) debe ser igual a total_questions ({cfg.total_questions})"
             )
 
         for t in topics:
             topic = await self.topic_repo.get_by_id(t.topic_id)
             if not topic:
-                raise NotFoundException(f"Topic {t.topic_id} not found")
+                raise NotFoundException(f"Tema {t.topic_id} no encontrado")

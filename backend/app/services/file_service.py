@@ -35,11 +35,11 @@ class FileService:
         content = await file.read()
 
         if len(content) > MAX_FILE_SIZE:
-            raise BadRequestException("File exceeds the 10 MB size limit")
+            raise BadRequestException("El archivo supera el límite de 10 MB")
 
         detected_mime = magic.from_buffer(content[:2048], mime=True)
         if detected_mime not in ALLOWED_MIME_TYPES:
-            raise BadRequestException(f"File type '{detected_mime}' is not allowed")
+            raise BadRequestException(f"El tipo de archivo '{detected_mime}' no está permitido")
 
         stored_name = f"{uuid.uuid4()}_{file.filename}"
         file_path = os.path.join(settings.UPLOAD_DIR, stored_name)
@@ -63,5 +63,5 @@ class FileService:
     async def get_by_id(self, file_id: uuid.UUID) -> FileResponse:
         file = await self.repo.get_by_id(file_id)
         if not file:
-            raise NotFoundException("File not found")
+            raise NotFoundException("Archivo no encontrado")
         return FileResponse.model_validate(file)

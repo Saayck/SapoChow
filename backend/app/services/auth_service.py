@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError
-from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
+from app.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from app.core.exceptions import ConflictException, UnauthorizedException
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
@@ -15,14 +15,14 @@ class AuthService:
 
     async def register(self, data: UserCreate) -> UserResponse:
         """
-        Register a new user.
+        Registra un nuevo usuario.
         Verifica duplicados de username y email antes de crear.
         La contraseña se hashea con bcrypt — nunca se almacena en texto plano.
         """
         if await self.repo.get_by_username(data.username):
-            raise ConflictException("Username already taken")
+            raise ConflictException("El nombre de usuario ya está en uso")
         if await self.repo.get_by_email(data.email):
-            raise ConflictException("Email already registered")
+            raise ConflictException("El correo ya está registrado")
 
         user = User(
             id=uuid.uuid4(),
@@ -42,9 +42,9 @@ class AuthService:
         """
         user = await self.repo.get_by_username(data.username)
         if not user or not verify_password(data.password, user.password_hash):
-            raise UnauthorizedException("Invalid credentials")
+            raise UnauthorizedException("Credenciales inválidas")
         if not user.is_active:
-            raise UnauthorizedException("Account is disabled")
+            raise UnauthorizedException("La cuenta está desactivada")
 
         payload = {"sub": str(user.id), "role": user.role}
         return TokenResponse(
@@ -60,12 +60,12 @@ class AuthService:
         try:
             payload = decode_token(refresh_token)
             if payload.get("type") != "refresh":
-                raise UnauthorizedException("Invalid token type")
+                raise UnauthorizedException("Tipo de token inválido")
             user = await self.repo.get_by_id(uuid.UUID(payload["sub"]))
             if not user or not user.is_active:
-                raise UnauthorizedException("User not found or inactive")
+                raise UnauthorizedException("Usuario no encontrado o inactivo")
         except JWTError:
-            raise UnauthorizedException("Invalid or expired refresh token")
+            raise UnauthorizedException("Token de refresco inválido o expirado")
 
         new_payload = {"sub": str(user.id), "role": user.role}
         return TokenResponse(
@@ -81,11 +81,11 @@ class AuthService:
         try:
             payload = decode_token(token)
             if payload.get("type") != "access":
-                raise UnauthorizedException("Invalid token type")
+                raise UnauthorizedException("Tipo de token inválido")
             user = await self.repo.get_by_id(uuid.UUID(payload["sub"]))
         except (JWTError, KeyError, ValueError):
-            raise UnauthorizedException("Invalid or expired token")
+            raise UnauthorizedException("Token inválido o expirado")
 
         if not user or not user.is_active:
-            raise UnauthorizedException("User not found")
+            raise UnauthorizedException("Usuario no encontrado")
         return user

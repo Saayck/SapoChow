@@ -12,7 +12,7 @@ class UserCreate(BaseModel):
     @classmethod
     def password_min_length(cls, v: str) -> str:
         if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters")
+            raise ValueError("La contraseña debe tener al menos 8 caracteres")
         return v
 
 

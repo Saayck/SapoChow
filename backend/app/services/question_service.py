@@ -2,7 +2,8 @@ import uuid
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import NotFoundException, BadRequestException
-from app.models.question import Question, QuestionStatus
+from app.models.question import Question
+from app.enums import QuestionStatus
 from app.models.alternative import Alternative
 from app.models.user import User
 from app.repositories.question_repository import QuestionRepository
@@ -24,14 +25,14 @@ class QuestionService:
     async def get_by_id(self, question_id: uuid.UUID) -> QuestionResponse:
         question = await self.repo.get_by_id(question_id)
         if not question:
-            raise NotFoundException("Question not found")
+            raise NotFoundException("Pregunta no encontrada")
         return QuestionResponse.model_validate(question)
 
     async def create(self, data: QuestionCreate, current_user: User) -> QuestionResponse:
         """
         Crea una pregunta con exactamente 5 alternativas y exactamente 1 correcta.
         Valida ambas restricciones antes de persistir nada.
-        Las preguntas nuevas inician en estado DRAFT.
+        Las preguntas nuevas inician en estado BORRADOR.
         """
         self._validate_alternatives(data.alternatives)
 
@@ -70,7 +71,7 @@ class QuestionService:
         """
         question = await self.repo.get_by_id(question_id)
         if not question:
-            raise NotFoundException("Question not found")
+            raise NotFoundException("Pregunta no encontrada")
         for field, value in data.model_dump(exclude_none=True).items():
             setattr(question, field, value)
         updated = await self.repo.update(question)
@@ -79,23 +80,23 @@ class QuestionService:
     async def delete(self, question_id: uuid.UUID) -> None:
         question = await self.repo.get_by_id(question_id)
         if not question:
-            raise NotFoundException("Question not found")
+            raise NotFoundException("Pregunta no encontrada")
         await self.repo.soft_delete(question)
 
     async def approve(self, question_id: uuid.UUID) -> QuestionResponse:
         """
-        Aprueba una pregunta. Solo permite aprobar desde DRAFT o REVIEWED.
+        Aprueba una pregunta. Solo permite aprobar desde BORRADOR o REVISADO.
         Re-valida las restricciones de alternativas como medida de seguridad.
         """
         question = await self.repo.get_by_id(question_id)
         if not question:
-            raise NotFoundException("Question not found")
-        if question.status == QuestionStatus.REJECTED:
-            raise BadRequestException("Cannot approve a rejected question; set it back to DRAFT first")
+            raise NotFoundException("Pregunta no encontrada")
+        if question.status == QuestionStatus.RECHAZADO:
+            raise BadRequestException("No se puede aprobar una pregunta rechazada; cámbiala a BORRADOR primero")
 
         self._validate_alternatives(question.alternatives)
 
-        question.status = QuestionStatus.APPROVED
+        question.status = QuestionStatus.APROBADO
         updated = await self.repo.update(question)
         return QuestionResponse.model_validate(updated)
 
@@ -103,8 +104,8 @@ class QuestionService:
         """Rechaza una pregunta. Cualquier estado puede ser rechazado."""
         question = await self.repo.get_by_id(question_id)
         if not question:
-            raise NotFoundException("Question not found")
-        question.status = QuestionStatus.REJECTED
+            raise NotFoundException("Pregunta no encontrada")
+        question.status = QuestionStatus.RECHAZADO
         updated = await self.repo.update(question)
         return QuestionResponse.model_validate(updated)
 
@@ -116,10 +117,10 @@ class QuestionService:
         """
         if len(alternatives) != REQUIRED_ALTERNATIVES:
             raise BadRequestException(
-                f"A question must have exactly {REQUIRED_ALTERNATIVES} alternatives, got {len(alternatives)}"
+                f"Una pregunta debe tener exactamente {REQUIRED_ALTERNATIVES} alternativas, se recibieron {len(alternatives)}"
             )
         correct_count = sum(1 for a in alternatives if a.is_correct)
         if correct_count != 1:
             raise BadRequestException(
-                f"A question must have exactly 1 correct alternative, got {correct_count}"
+                f"Una pregunta debe tener exactamente 1 alternativa correcta, se recibieron {correct_count}"
             )
