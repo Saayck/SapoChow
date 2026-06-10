@@ -1,0 +1,123 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{microtype}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Versión \textbf{((( version_code )))}}
+\lhead{((( institution_name )))}
+\cfoot{\thepage\ / \pageref{LastPage}}
+
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+
+%% ── ENCABEZADO ──────────────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries ((( title )))}\\[6pt]
+  {\large ((( institution_name )))}\\[4pt]
+  \begin{tabular}{rl}
+    \textbf{Docente:}  & ((( teacher_name ))) \\
+    \textbf{Fecha:}    & ((( exam_date )))     \\
+    \textbf{Versión:}  & \textbf{((( version_code )))} \\
+  \end{tabular}
+\end{center}
+
+\noindent\rule{\textwidth}{1pt}
+
+((*- if instructions *))
+\medskip
+\noindent\textbf{Instrucciones:} ((( instructions )))
+\medskip
+
+\noindent\rule{\textwidth}{0.4pt}
+((*- endif *))
+
+\bigskip
+
+%% ── PREGUNTAS ───────────────────────────────────────────────────────────────
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+
+((*- for q in questions *))
+  \item
+    ((*- if q.statement_latex *))
+      $((( q.statement_latex )))$
+    ((*- elif q.statement_text *))
+      ((( q.statement_text )))
+    ((*- endif *))
+    ((*- if q.image_path *))
+      \begin{center}
+        \includegraphics[max width=0.6\textwidth]{((( q.image_path )))}
+      \end{center}
+    ((*- endif *))
+
+    \begin{enumerate}[leftmargin=1.5cm, label=\textbf{\Alph*.}]
+    ((*- for alt in q.alternatives *))
+      \item[((*  alt.letter *)).]
+        ((*- if alt.content_latex *))
+          $((( alt.content_latex )))$
+        ((*- elif alt.content_text *))
+          ((( alt.content_text )))
+        ((*- endif *))
+        ((*- if alt.image_path *))
+          \begin{center}
+            \includegraphics[max width=0.4\textwidth]{((( alt.image_path )))}
+          \end{center}
+        ((*- endif *))
+    ((*- endfor *))
+    \end{enumerate}
+
+  \bigskip
+((*- endfor *))
+
+\end{enumerate}
+
+\newpage
+
+%% ── CLAVE DE RESPUESTAS ─────────────────────────────────────────────────────
+\begin{center}
+  {\Large\bfseries Clave de Respuestas}\\[4pt]
+  Versión \textbf{((( version_code )))} — ((( title )))
+\end{center}
+
+\medskip
+
+\begin{center}
+\begin{tabular}{|c|c||c|c||c|c||c|c|}
+\hline
+\textbf{N°} & \textbf{Resp.} &
+\textbf{N°} & \textbf{Resp.} &
+\textbf{N°} & \textbf{Resp.} &
+\textbf{N°} & \textbf{Resp.} \\
+\hline
+((*- set cols = 4 *))
+((*- set total = answer_key | length *))
+((*- set rows = (total + cols - 1) // cols *))
+((*- for row in range(rows) *))
+  ((*- for col in range(cols) *))
+    ((*- set idx = row + col * rows *))
+    ((*- if idx < total *))
+      \textbf{((( answer_key[idx].number )))} & ((( answer_key[idx].letter )))
+    ((*- else *))
+      &
+    ((*- endif *))
+    ((*- if not loop.last *)) & ((*- endif *))
+  ((*- endfor *)) \\
+\hline
+((*- endfor *))
+\end{tabular}
+\end{center}
+
+\end{document}
