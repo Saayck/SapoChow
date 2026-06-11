@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "sqlite+aiosqlite:////app/data/examforge.db"
+      SECRET_KEY: "fa4769029abaf9b65585ec2d7ef029a0b82941459a8ea999788b038a98cc5531"
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE_MB: "10"
+      TECTONIC_PATH: tectonic
+      PDF_OUTPUT_DIR: /app/pdfs
+      FRONTEND_URL: "http://localhost:3000"
+    volumes:
+      - api_uploads:/app/uploads
+      - api_pdfs:/app/pdfs
+      - api_data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  api_uploads:
+  api_pdfs:
+  api_data:
