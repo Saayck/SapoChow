@@ -15,9 +15,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-6 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-lg shadow-blue-500/20">
-            EF
-          </div>
+          <img src="/logo.png" alt="ExamForge" className="w-9 h-9 rounded-xl object-cover shadow-lg" />
           <div>
             <span className="text-lg font-bold tracking-tight">ExamForge</span>
             <p className="text-[10px] text-white/40 font-medium uppercase tracking-wider">Plataforma de exámenes</p>

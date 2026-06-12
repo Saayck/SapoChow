@@ -31,9 +31,7 @@ export function LoginPage() {
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-primary-500/20">
-            <span className="text-white font-extrabold text-2xl">E</span>
-          </div>
+          <img src="/logo.png" alt="ExamForge" className="w-20 h-20 mx-auto mb-5 rounded-2xl shadow-xl object-cover" />
           <h1 className="text-2xl font-bold text-gray-900">ExamForge</h1>
           <p className="text-gray-500 text-sm mt-1">Plataforma de exámenes virtuales</p>
         </div>

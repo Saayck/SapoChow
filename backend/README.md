@@ -188,3 +188,4 @@ Los tests usan una base de datos SQLite **en memoria** (`:memory:`), completamen
 - Api no funciona http://localhost:3000/api/versions/1/pdf
   Request Method
   GET
+- Incorporar tectonic en docker
