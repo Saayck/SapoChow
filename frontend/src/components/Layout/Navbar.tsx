@@ -12,17 +12,22 @@ export function Navbar() {
   }
 
   return (
-    <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
-      <h1 className="text-sm font-medium text-gray-500">Sistema de Gestión de Exámenes</h1>
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 lg:px-8 shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="text-sm text-gray-500 font-medium">Sistema de Gestión de Exámenes</span>
+      </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <User size={16} />
-          <span>{user?.full_name ?? user?.email ?? 'Usuario'}</span>
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2.5 text-sm">
+          <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+            <User size={15} className="text-primary-600" />
+          </div>
+          <span className="text-gray-700 font-medium">{user?.full_name ?? user?.email ?? 'Usuario'}</span>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-red-500 transition-colors duration-150"
         >
           <LogOut size={15} />
           Salir

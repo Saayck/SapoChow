@@ -126,9 +126,9 @@ export function ExamBuilderPage() {
 
   return (
     <FormProvider {...methods}>
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-gray-600">
+      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
             <ArrowLeft size={20} />
           </button>
           <div>
@@ -142,7 +142,6 @@ export function ExamBuilderPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic info */}
           <Card title="Información general">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
@@ -182,14 +181,12 @@ export function ExamBuilderPage() {
             </div>
           </Card>
 
-          {/* Config — only for new exams */}
           {!isEditing && (
             <Card title="Configuración del examen">
               <ExamConfigForm />
             </Card>
           )}
 
-          {/* Topics — only for new exams */}
           {!isEditing && (
             <Card
               title="Temas del examen"
@@ -201,7 +198,7 @@ export function ExamBuilderPage() {
                   variant="secondary"
                   onClick={() => append({ topic_id: 0, questions_count: 10 })}
                 >
-                  <Plus size={14} className="mr-1" /> Agregar tema
+                  <Plus size={14} /> Agregar tema
                 </Button>
               }
             >
@@ -233,9 +230,9 @@ export function ExamBuilderPage() {
                       <button
                         type="button"
                         onClick={() => remove(i)}
-                        className="text-gray-400 hover:text-red-500 pb-2"
+                        className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all mb-0.5"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={15} />
                       </button>
                     )}
                   </div>
@@ -245,7 +242,7 @@ export function ExamBuilderPage() {
           )}
 
           {submitError && (
-            <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               {submitError}
             </p>
           )}

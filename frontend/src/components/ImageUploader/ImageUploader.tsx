@@ -31,17 +31,17 @@ export function ImageUploader({ onFile, currentUrl, onRemove, loading, error, la
   const displayUrl = preview ?? currentUrl
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       {label && <p className="text-sm font-medium text-gray-700">{label}</p>}
 
       {displayUrl ? (
-        <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
+        <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-gray-200 shadow-sm group">
           <img src={displayUrl} alt="preview" className="w-full h-full object-cover" />
           {onRemove && (
             <button
               type="button"
               onClick={() => { setPreview(null); onRemove() }}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+              className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <X size={12} />
             </button>
@@ -53,27 +53,26 @@ export function ImageUploader({ onFile, currentUrl, onRemove, loading, error, la
           onClick={() => ref.current?.click()}
           disabled={loading}
           className={clsx(
-            'flex flex-col items-center justify-center gap-2 w-32 h-32 rounded-lg border-2 border-dashed text-gray-400 hover:border-blue-400 hover:text-blue-400 transition-colors',
-            error || localError ? 'border-red-300' : 'border-gray-300',
+            'flex flex-col items-center justify-center gap-2 w-32 h-32 rounded-xl border-2 border-dashed transition-all duration-150',
+            error || localError
+              ? 'border-red-300 bg-red-50/30 hover:border-red-400 hover:bg-red-50/50'
+              : 'border-gray-300 bg-gray-50/50 hover:border-primary-400 hover:bg-primary-50/30',
             loading && 'opacity-50 cursor-not-allowed'
           )}
         >
           {loading ? (
-            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
+            <div className="w-6 h-6 border-[3px] border-gray-200 border-t-primary-500 rounded-full animate-spin" />
           ) : (
             <>
-              <Upload size={20} />
-              <span className="text-xs text-center">Subir imagen</span>
+              <Upload size={20} className="text-gray-400" />
+              <span className="text-xs font-medium text-gray-500">Subir imagen</span>
             </>
           )}
         </button>
       )}
 
       <input ref={ref} type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden" onChange={handleChange} />
-      {(localError || error) && <p className="text-xs text-red-500">{localError ?? error}</p>}
+      {(localError || error) && <p className="text-xs text-red-500 font-medium">{localError ?? error}</p>}
       <p className="text-xs text-gray-400">JPG, PNG, WebP — máx 10MB</p>
     </div>
   )

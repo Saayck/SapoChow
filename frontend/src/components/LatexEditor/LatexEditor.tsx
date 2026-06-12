@@ -23,17 +23,17 @@ export function LatexEditor({
   const [mode, setMode] = useState<'edit' | 'preview'>('edit')
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       {label && <p className="text-sm font-medium text-gray-700">{label}</p>}
 
       {/* Mode toggle */}
-      <div className="flex border border-gray-200 rounded-t-md overflow-hidden text-xs">
+      <div className="flex border border-gray-200 rounded-lg overflow-hidden text-xs">
         <button
           type="button"
           onClick={() => setMode('edit')}
           className={clsx(
-            'flex items-center gap-1 px-3 py-1.5 transition-colors',
-            mode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+            'flex items-center gap-1.5 px-3 py-1.5 font-medium transition-all duration-150',
+            mode === 'edit' ? 'bg-primary-600 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
           )}
         >
           <Edit3 size={12} /> Editar
@@ -42,8 +42,8 @@ export function LatexEditor({
           type="button"
           onClick={() => setMode('preview')}
           className={clsx(
-            'flex items-center gap-1 px-3 py-1.5 transition-colors',
-            mode === 'preview' ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+            'flex items-center gap-1.5 px-3 py-1.5 font-medium transition-all duration-150',
+            mode === 'preview' ? 'bg-primary-600 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
           )}
         >
           <Eye size={12} /> Preview
@@ -51,17 +51,20 @@ export function LatexEditor({
       </div>
 
       {/* Editor or Preview */}
-      <div className={clsx('border rounded-b-md min-h-[80px]', error ? 'border-red-400' : 'border-gray-300')}>
+      <div className={clsx(
+        'border rounded-lg overflow-hidden transition-all duration-150',
+        error ? 'border-red-300' : 'border-gray-300 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-500/30'
+      )}>
         {mode === 'edit' ? (
           <textarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             rows={3}
-            className="w-full px-3 py-2 text-sm font-mono resize-y focus:outline-none focus:ring-1 focus:ring-blue-500 rounded-b-md"
+            className="w-full px-3 py-2 text-sm font-mono resize-y focus:outline-none placeholder:text-gray-400"
           />
         ) : (
-          <div className="px-3 py-2 min-h-[80px]">
+          <div className="px-3 py-3 min-h-[80px]">
             {value ? (
               <div
                 className="text-sm"
@@ -74,7 +77,7 @@ export function LatexEditor({
         )}
       </div>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
     </div>
   )
 }

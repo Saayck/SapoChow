@@ -5,6 +5,7 @@ import { RegisterPage } from './pages/Register/RegisterPage'
 import { DashboardPage } from './pages/Dashboard/DashboardPage'
 import { TopicsPage } from './pages/Topics/TopicsPage'
 import { QuestionBankPage } from './pages/QuestionBank/QuestionBankPage'
+import { ExamsListPage } from './pages/ExamsList/ExamsListPage'
 import { ExamBuilderPage } from './pages/ExamBuilder/ExamBuilderPage'
 import { VersionGeneratorPage } from './pages/VersionGenerator/VersionGeneratorPage'
 import { ExamPreviewPage } from './pages/ExamPreview/ExamPreviewPage'
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/topics" element={<TopicsPage />} />
         <Route path="/questions" element={<QuestionBankPage />} />
+        <Route path="/exams" element={<ExamsListPage />} />
         <Route path="/exams/new" element={<ExamBuilderPage />} />
         <Route path="/exams/:examId/edit" element={<ExamBuilderPage />} />
         <Route path="/exams/:examId/versions" element={<VersionGeneratorPage />} />

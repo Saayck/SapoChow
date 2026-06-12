@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useFormContext, Controller } from 'react-hook-form'
+import { useFormContext } from 'react-hook-form'
 import { Input } from '../ui/Input'
 
 export interface ExamConfigFormValues {
@@ -49,7 +49,7 @@ export function ExamConfigForm() {
         label="Total de preguntas (calculado automáticamente)"
         type="number"
         readOnly
-        className="bg-gray-50 cursor-not-allowed"
+        className="bg-gray-50 cursor-not-allowed text-gray-500"
         error={(errors as any)?.config?.total_questions?.message}
         {...register('config.total_questions', { valueAsNumber: true })}
       />

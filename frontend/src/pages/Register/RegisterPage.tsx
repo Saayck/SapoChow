@@ -47,18 +47,18 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-gradient-to-br from-surface via-white to-surface-dark flex items-center justify-center p-4">
+      <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-[#1e3a5f] rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">E</span>
+          <div className="w-16 h-16 bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-primary-500/20">
+            <span className="text-white font-extrabold text-2xl">E</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">ExamForge</h1>
           <p className="text-gray-500 text-sm mt-1">Crea tu cuenta</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">Registro</h2>
+        <div className="bg-white rounded-2xl shadow-elevated border border-gray-200/80 p-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Registro</h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <Input
@@ -90,7 +90,7 @@ export function RegisterPage() {
             />
 
             {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
+              <p className="text-sm text-red-500 text-center bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
             )}
 
             <Button type="submit" loading={isLoading} className="w-full mt-2">
@@ -98,9 +98,9 @@ export function RegisterPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-5">
+          <p className="text-center text-sm text-gray-500 mt-6">
             ¿Ya tienes cuenta?{' '}
-            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold hover:underline">
               Inicia sesión
             </Link>
           </p>

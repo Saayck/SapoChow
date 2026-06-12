@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Eye, Download, Shuffle, FileArchive, Pencil } from 'lucide-react'
-import { clsx } from 'clsx'
 import { useExam } from '../../hooks/useExams'
 import { useVersions, useGenerateVersions } from '../../hooks/useVersions'
 import { versionService } from '../../services/versionService'
@@ -66,9 +65,9 @@ export function VersionGeneratorPage() {
   if (examError || !exam) return <ErrorMessage message="No se pudo cargar el examen" />
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-gray-600">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      <div className="flex items-center gap-4">
+        <button onClick={() => navigate(-1)} className="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">
@@ -80,7 +79,7 @@ export function VersionGeneratorPage() {
           size="sm"
           onClick={() => navigate(`/exams/${id}/edit`)}
         >
-          <Pencil size={14} className="mr-1.5" /> Editar
+          <Pencil size={14} /> Editar
         </Button>
       </div>
 
@@ -94,7 +93,7 @@ export function VersionGeneratorPage() {
               { label: 'Total preguntas', value: exam.config.total_questions },
               { label: 'Versiones', value: exam.config.version_count },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-gray-50 rounded-lg p-3">
+              <div key={label} className="bg-gray-50 rounded-xl p-4 transition-colors hover:bg-gray-100">
                 <p className="text-2xl font-bold text-gray-900">{value}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{label}</p>
               </div>
@@ -115,17 +114,17 @@ export function VersionGeneratorPage() {
                 onClick={handleDownloadZip}
                 loading={downloadingZip}
               >
-                <FileArchive size={14} className="mr-1.5" /> Exportar ZIP
+                <FileArchive size={14} /> Exportar ZIP
               </Button>
             )}
             <Button size="sm" onClick={handleGenerate} loading={generating}>
-              <Shuffle size={14} className="mr-1.5" /> Generar versiones
+              <Shuffle size={14} /> Generar versiones
             </Button>
           </div>
         }
       >
         {actionError && (
-          <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded px-3 py-2 mb-4">
+          <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
             {actionError}
           </p>
         )}
@@ -133,9 +132,11 @@ export function VersionGeneratorPage() {
         {loadingVersions ? (
           <LoadingState message="Cargando versiones..." />
         ) : !versions?.length ? (
-          <div className="text-center py-10 text-gray-400">
-            <Shuffle size={32} className="mx-auto mb-2 opacity-30" />
-            <p className="font-medium">No hay versiones generadas</p>
+          <div className="flex flex-col items-center py-14 text-gray-400">
+            <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
+              <Shuffle size={28} className="text-gray-300" />
+            </div>
+            <p className="font-medium text-gray-500">No hay versiones generadas</p>
             <p className="text-sm mt-1">Haz clic en "Generar versiones" para comenzar</p>
           </div>
         ) : (
@@ -143,10 +144,10 @@ export function VersionGeneratorPage() {
             {versions.map((v) => (
               <div
                 key={v.id}
-                className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3"
+                className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 transition-all hover:bg-gray-100"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-9 h-9 rounded-full bg-[#1e3a5f] text-white flex items-center justify-center font-bold text-sm">
+                  <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-sidebar to-sidebar-active text-white flex items-center justify-center font-bold text-sm shadow-sm">
                     {v.version_code}
                   </span>
                   <div>
@@ -159,10 +160,7 @@ export function VersionGeneratorPage() {
                 <div className="flex gap-2">
                   <Link
                     to={`/versions/${v.id}/preview`}
-                    className={clsx(
-                      'inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
-                      'hover:bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500'
-                    )}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm border border-transparent hover:border-gray-200 transition-all"
                   >
                     <Eye size={14} /> Vista previa
                   </Link>
@@ -172,7 +170,7 @@ export function VersionGeneratorPage() {
                     onClick={() => handleDownloadPdf(v.id, v.version_code)}
                     loading={downloading === v.id}
                   >
-                    <Download size={14} className="mr-1" /> PDF
+                    <Download size={14} /> PDF
                   </Button>
                 </div>
               </div>

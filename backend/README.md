@@ -183,3 +183,8 @@ Los tests usan una base de datos SQLite **en memoria** (`:memory:`), completamen
 - **python-magic en Windows:** la detección MIME usa firmas de bytes propias (no python-magic) por compatibilidad cross-platform.
 - **Autenticación en endpoints:** los endpoints GET no requieren JWT para facilitar consultas del frontend. Para entorno productivo, aplica `get_current_user` también en GETs.
 - **Importación Word/PDF:** la detección es heurística. Formatos muy complejos pueden requerir ajuste en `import_service.py`.
+
+- No genera pdf del examen
+- Api no funciona http://localhost:3000/api/versions/1/pdf
+  Request Method
+  GET
