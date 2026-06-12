@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Upload, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload, ChevronDown, ChevronUp, HelpCircle, Search, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   useQuestions, useCreateQuestion, useUpdateQuestion,
-  useDeleteQuestion, useImportQuestions, useUploadQuestionImage,
+  useDeleteQuestion, useImportQuestions, useConfirmImport, useUploadQuestionImage,
 } from '../../hooks/useQuestions'
 import { useTopics } from '../../hooks/useTopics'
 import { questionService } from '../../services/questionService'
-import type { Question, QuestionCreate } from '../../types/question'
+import type { Question, QuestionCreate, QuestionImportPreview, ImportedQuestionPreview } from '../../types/question'
 import type { AlternativeCreate } from '../../types/alternative'
 import { Button } from '../../components/ui/Button'
 import { Select } from '../../components/ui/Select'
@@ -116,19 +116,173 @@ function QuestionCard({ question, topicName, onEdit, onDelete }: {
   )
 }
 
+function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
+  preview: QuestionImportPreview
+  topics: { id: number; name: string }[]
+  onClose: () => void
+  onConfirm: (topicId: number, selected: ImportedQuestionPreview[]) => void
+  saving: boolean
+}) {
+  const [topicId, setTopicId] = useState(0)
+  const [selected, setSelected] = useState<boolean[]>(
+    () => preview.detected_questions.map((q) => {
+      const hasWarning = q.warnings.length > 0
+      return !hasWarning
+    })
+  )
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const topicOptions = [
+    { value: '0', label: '— Seleccionar tema —' },
+    ...topics.map((t) => ({ value: String(t.id), label: t.name })),
+  ]
+
+  const selectedQuestions = preview.detected_questions.filter((_, i) => selected[i])
+  const toggle = (i: number) => setSelected((prev) => prev.map((v, idx) => idx === i ? !v : v))
+
+  const handleConfirm = () => {
+    if (topicId === 0) {
+      setSubmitError('Debes seleccionar un tema')
+      return
+    }
+    if (selectedQuestions.length === 0) {
+      setSubmitError('Selecciona al menos una pregunta')
+      return
+    }
+    setSubmitError(null)
+    onConfirm(topicId, selectedQuestions)
+  }
+
+  return (
+    <Modal open onClose={onClose} title={`Importar preguntas — ${preview.file_name}`} size="xl">
+      <div className="space-y-4">
+        {preview.warnings.length > 0 && (
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              {preview.warnings.map((w, i) => <p key={i}>{w}</p>)}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Asignar a tema <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={topicId}
+            onChange={(e) => { setTopicId(Number(e.target.value)); setSubmitError(null) }}
+            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all"
+          >
+            {topicOptions.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <p className="text-sm text-gray-500">
+          {preview.detected_questions.length} pregunta{preview.detected_questions.length !== 1 ? 's' : ''} detectada{preview.detected_questions.length !== 1 ? 's' : ''}.
+          Selecciona las que deseas guardar.
+        </p>
+
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+          {preview.detected_questions.map((q, i) => {
+            const hasWarnings = q.warnings.length > 0
+            return (
+              <div
+                key={i}
+                className={clsx(
+                  'rounded-xl border px-4 py-3 cursor-pointer transition-all',
+                  selected[i]
+                    ? 'border-primary-300 bg-primary-50/40'
+                    : 'border-gray-200 bg-gray-50/50 opacity-60'
+                )}
+                onClick={() => toggle(i)}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selected[i]}
+                    onChange={() => toggle(i)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 mb-2">
+                      {i + 1}. {q.statement_text || q.statement_latex || '(sin enunciado)'}
+                    </p>
+                    <div className="space-y-1">
+                      {q.alternatives.map((alt, ai) => (
+                        <div key={ai} className={clsx('flex items-center gap-2 text-xs', alt.is_correct && 'text-emerald-700 font-medium')}>
+                          <span className={clsx(
+                            'w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
+                            alt.is_correct ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'
+                          )}>
+                            {String.fromCharCode(65 + ai)}
+                          </span>
+                          <span>{alt.content_text || alt.content_latex}</span>
+                          {alt.is_correct && <CheckCircle2 size={12} className="text-emerald-500" />}
+                        </div>
+                      ))}
+                    </div>
+                    {hasWarnings && (
+                      <div className="mt-2 space-y-0.5">
+                        {q.warnings.map((w, wi) => (
+                          <p key={wi} className="text-xs text-amber-600 flex items-center gap-1">
+                            <AlertTriangle size={11} />
+                            {w}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {submitError && (
+          <p className="text-sm text-red-500 flex items-center gap-1">
+            <AlertTriangle size={14} /> {submitError}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-500">
+            {selectedQuestions.length} de {preview.detected_questions.length} seleccionada{selectedQuestions.length !== 1 ? 's' : ''}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={onClose} disabled={saving}>Cancelar</Button>
+            <Button onClick={handleConfirm} loading={saving} disabled={selectedQuestions.length === 0}>
+              Guardar {selectedQuestions.length > 0 ? `${selectedQuestions.length} pregunta${selectedQuestions.length !== 1 ? 's' : ''}` : ''}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 export function QuestionBankPage() {
   const [topicFilter, setTopicFilter] = useState<number | undefined>()
-  const { data: questions, isLoading, error, refetch } = useQuestions({ topic_id: topicFilter })
+  const [search, setSearch] = useState('')
+  const { data: questions, isLoading, error, refetch } = useQuestions({
+    topic_id: topicFilter,
+    search: search || undefined,
+  })
   const { data: topics } = useTopics()
   const createMutation = useCreateQuestion()
   const updateMutation = useUpdateQuestion()
   const deleteMutation = useDeleteQuestion()
   const importMutation = useImportQuestions()
+  const confirmImportMutation = useConfirmImport()
   const uploadImageMutation = useUploadQuestionImage()
 
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Question | null>(null)
   const [deleting, setDeleting] = useState<Question | null>(null)
+  const [importPreview, setImportPreview] = useState<QuestionImportPreview | null>(null)
 
   const [alternatives, setAlternatives] = useState<AlternativeCreate[]>(emptyAlts())
   const [altImageFiles, setAltImageFiles] = useState<(File | null)[]>(EMPTY_ALT_IMAGES())
@@ -224,12 +378,22 @@ export function QuestionBankPage() {
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    e.target.value = ''
     try {
-      await importMutation.mutateAsync(file)
+      const preview = await importMutation.mutateAsync(file)
+      setImportPreview(preview)
     } catch (err) {
       alert(getErrorMessage(err))
     }
-    e.target.value = ''
+  }
+
+  const handleConfirmImport = async (topicId: number, selected: ImportedQuestionPreview[]) => {
+    try {
+      await confirmImportMutation.mutateAsync({ topic_id: topicId, questions: selected })
+      setImportPreview(null)
+    } catch (err) {
+      alert(getErrorMessage(err))
+    }
   }
 
   const topicOptions = [
@@ -277,12 +441,26 @@ export function QuestionBankPage() {
         </div>
       </div>
 
-      <Select
-        options={topicOptions}
-        value={topicFilter ? String(topicFilter) : ''}
-        onChange={(e) => setTopicFilter(e.target.value ? Number(e.target.value) : undefined)}
-        label="Filtrar por tema"
-      />
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Buscar pregunta..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="block w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-150"
+          />
+        </div>
+        <div className="sm:w-56">
+          <Select
+            options={topicOptions}
+            value={topicFilter ? String(topicFilter) : ''}
+            onChange={(e) => setTopicFilter(e.target.value ? Number(e.target.value) : undefined)}
+          />
+        </div>
+      </div>
 
       {questions?.length === 0 ? (
         <Card>
@@ -290,7 +468,9 @@ export function QuestionBankPage() {
             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
               <HelpCircle size={28} className="text-gray-300" />
             </div>
-            <p className="font-medium text-gray-500">No hay preguntas{topicFilter ? ' en este tema' : ''}</p>
+            <p className="font-medium text-gray-500">
+              {search ? `Sin resultados para "${search}"` : 'No hay preguntas' + (topicFilter ? ' en este tema' : '')}
+            </p>
             <p className="text-sm mt-1">Crea o importa preguntas para comenzar</p>
           </div>
         </Card>
@@ -395,6 +575,17 @@ export function QuestionBankPage() {
           </Button>
         </div>
       </Modal>
+
+      {/* Import preview modal */}
+      {importPreview && (
+        <ImportPreviewModal
+          preview={importPreview}
+          topics={topics ?? []}
+          onClose={() => setImportPreview(null)}
+          onConfirm={handleConfirmImport}
+          saving={confirmImportMutation.isPending}
+        />
+      )}
     </div>
   )
 }

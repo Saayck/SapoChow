@@ -15,7 +15,7 @@ import tempfile
 import shutil
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -30,7 +30,7 @@ def _get_jinja_env() -> Environment:
     templates_dir = Path(__file__).parent.parent / "templates"
     env = Environment(
         loader=FileSystemLoader(str(templates_dir)),
-        autoescape=select_autoescape(["tex.j2"]),
+        autoescape=False,
         block_start_string="((*",
         block_end_string="*))",
         variable_start_string="(((",

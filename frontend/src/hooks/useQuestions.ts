@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { questionService } from '../services/questionService'
-import type { QuestionCreate, QuestionUpdate } from '../types/question'
+import type { QuestionCreate, QuestionUpdate, QuestionImportConfirm } from '../types/question'
 
 export const QUESTIONS_KEY = ['questions'] as const
 
@@ -39,6 +39,14 @@ export function useDeleteQuestion() {
 export function useImportQuestions() {
   return useMutation({
     mutationFn: (file: File) => questionService.importFile(file),
+  })
+}
+
+export function useConfirmImport() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: QuestionImportConfirm) => questionService.confirmImport(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUESTIONS_KEY }),
   })
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Eye, Download, Shuffle, FileArchive, Pencil } from 'lucide-react'
+import { ArrowLeft, Eye, Download, Shuffle, FileArchive, Pencil, ExternalLink } from 'lucide-react'
 import { useExam } from '../../hooks/useExams'
 import { useVersions, useGenerateVersions } from '../../hooks/useVersions'
 import { versionService } from '../../services/versionService'
@@ -22,6 +22,7 @@ export function VersionGeneratorPage() {
 
   const [generating, setGenerating] = useState(false)
   const [downloading, setDownloading] = useState<number | null>(null)
+  const [openingPdf, setOpeningPdf] = useState<number | null>(null)
   const [downloadingZip, setDownloadingZip] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -46,6 +47,20 @@ export function VersionGeneratorPage() {
       setActionError(getErrorMessage(err))
     } finally {
       setDownloading(null)
+    }
+  }
+
+  const handleOpenPdf = async (versionId: number) => {
+    setOpeningPdf(versionId)
+    try {
+      const blob = await versionService.downloadPdf(versionId)
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (err) {
+      setActionError(getErrorMessage(err))
+    } finally {
+      setOpeningPdf(null)
     }
   }
 
@@ -167,10 +182,19 @@ export function VersionGeneratorPage() {
                   <Button
                     variant="secondary"
                     size="sm"
+                    onClick={() => handleOpenPdf(v.id)}
+                    loading={openingPdf === v.id}
+                    title="Abrir PDF en nueva pestaña"
+                  >
+                    <ExternalLink size={14} /> Ver PDF
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => handleDownloadPdf(v.id, v.version_code)}
                     loading={downloading === v.id}
                   >
-                    <Download size={14} /> PDF
+                    <Download size={14} />
                   </Button>
                 </div>
               </div>

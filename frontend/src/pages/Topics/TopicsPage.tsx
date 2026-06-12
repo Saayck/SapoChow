@@ -116,6 +116,9 @@ export function TopicsPage() {
                   )}
                 </div>
               </div>
+              <span className="ml-auto mr-3 shrink-0 inline-flex items-center gap-1 text-xs font-medium text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full">
+                {topic.question_count} pregunta{topic.question_count !== 1 ? 's' : ''}
+              </span>
               <div className="flex gap-1 shrink-0 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <button
                   onClick={() => openEdit(topic)}

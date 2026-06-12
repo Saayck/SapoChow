@@ -7,10 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install tectonic (fetches latest release from GitHub)
+# Install tectonic (pinned version for reproducible builds)
 RUN set -eux; \
-    TECTONIC_VERSION=$(curl -fsSL "https://api.github.com/repos/tectonic-typesetting/tectonic/releases/latest" \
-        | python3 -c "import sys, json; print(json.load(sys.stdin)['tag_name'].split('@')[1])"); \
+    TECTONIC_VERSION="0.15.0"; \
     curl -fsSL \
         "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40${TECTONIC_VERSION}/tectonic-${TECTONIC_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
         | tar xz -C /usr/local/bin/; \

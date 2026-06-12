@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.topic import Topic
+from app.models.question import Question
 from app.schemas.topic import TopicCreate, TopicUpdate, TopicResponse
 from app.utils.exceptions import NotFoundError, ValidationError
 from app.utils.security import get_current_user
@@ -14,8 +15,17 @@ router = APIRouter(prefix="/topics", tags=["Topics"])
 
 @router.get("", response_model=list[TopicResponse])
 async def list_topics(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Topic).order_by(Topic.created_at.desc()))
-    return list(result.scalars().all())
+    result = await db.execute(
+        select(Topic, func.count(Question.id).label("question_count"))
+        .outerjoin(Question, Question.topic_id == Topic.id)
+        .group_by(Topic.id)
+        .order_by(Topic.created_at.desc())
+    )
+    rows = result.all()
+    return [
+        TopicResponse.model_validate(topic).model_copy(update={"question_count": count})
+        for topic, count in rows
+    ]
 
 
 @router.post("", response_model=TopicResponse, status_code=201)
@@ -33,11 +43,17 @@ async def create_topic(
 
 @router.get("/{topic_id}", response_model=TopicResponse)
 async def get_topic(topic_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Topic).where(Topic.id == topic_id))
-    topic = result.scalar_one_or_none()
-    if not topic:
+    result = await db.execute(
+        select(Topic, func.count(Question.id).label("question_count"))
+        .outerjoin(Question, Question.topic_id == Topic.id)
+        .where(Topic.id == topic_id)
+        .group_by(Topic.id)
+    )
+    row = result.one_or_none()
+    if not row:
         raise NotFoundError("Topic", topic_id)
-    return topic
+    topic, count = row
+    return TopicResponse.model_validate(topic).model_copy(update={"question_count": count})
 
 
 @router.put("/{topic_id}", response_model=TopicResponse)

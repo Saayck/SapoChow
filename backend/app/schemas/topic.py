@@ -33,3 +33,4 @@ class TopicResponse(BaseModel):
     name: str
     description: str | None
     created_at: datetime
+    question_count: int = 0

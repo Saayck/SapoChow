@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models.question import Question
 from app.models.alternative import Alternative
 from app.models.topic import Topic
-from app.schemas.question import QuestionCreate, QuestionUpdate, QuestionResponse, QuestionImportPreview
+from app.schemas.question import QuestionCreate, QuestionUpdate, QuestionResponse, QuestionImportPreview, QuestionImportConfirm
 from app.services.file_service import save_upload_file
 from app.services.import_service import import_questions_from_file
 from app.utils.exceptions import NotFoundError, ValidationError
@@ -142,6 +142,61 @@ async def delete_question(
     if not question:
         raise NotFoundError("Question", question_id)
     await db.delete(question)
+
+
+@router.post("/import/confirm", response_model=list[QuestionResponse], status_code=201)
+async def confirm_import(
+    data: QuestionImportConfirm,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    topic_result = await db.execute(select(Topic).where(Topic.id == data.topic_id))
+    if not topic_result.scalar_one_or_none():
+        raise NotFoundError("Topic", data.topic_id)
+
+    if not data.questions:
+        raise ValidationError("No questions provided to save")
+
+    created = []
+    for i, q_data in enumerate(data.questions, start=1):
+        if not q_data.statement_text and not q_data.statement_latex:
+            raise ValidationError(f"Question {i} must have a statement")
+        if len(q_data.alternatives) != 5:
+            raise ValidationError(
+                f"Question {i} must have exactly 5 alternatives, got {len(q_data.alternatives)}"
+            )
+        correct_count = sum(1 for a in q_data.alternatives if a.is_correct)
+        if correct_count != 1:
+            raise ValidationError(
+                f"Question {i} must have exactly 1 correct alternative, got {correct_count}"
+            )
+
+        question = Question(
+            topic_id=data.topic_id,
+            statement_text=q_data.statement_text,
+            statement_latex=q_data.statement_latex,
+        )
+        db.add(question)
+        await db.flush()
+
+        for alt_data in q_data.alternatives:
+            if not alt_data.content_text and not alt_data.content_latex:
+                raise ValidationError(f"An alternative in question {i} has no content")
+            db.add(Alternative(
+                question_id=question.id,
+                content_text=alt_data.content_text,
+                content_latex=alt_data.content_latex,
+                is_correct=alt_data.is_correct,
+            ))
+
+        await db.flush()
+        q_result = await db.execute(
+            select(Question).where(Question.id == question.id)
+            .options(selectinload(Question.alternatives))
+        )
+        created.append(q_result.scalar_one())
+
+    return created
 
 
 @router.post("/import", response_model=QuestionImportPreview)

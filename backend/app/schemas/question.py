@@ -69,3 +69,8 @@ class QuestionImportPreview(BaseModel):
     file_name: str
     detected_questions: list[ImportedQuestionPreview]
     warnings: list[str] = []
+
+
+class QuestionImportConfirm(BaseModel):
+    topic_id: int
+    questions: list[ImportedQuestionPreview]

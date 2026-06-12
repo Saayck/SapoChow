@@ -44,3 +44,8 @@ export interface QuestionImportPreview {
   detected_questions: ImportedQuestionPreview[]
   warnings: string[]
 }
+
+export interface QuestionImportConfirm {
+  topic_id: number
+  questions: ImportedQuestionPreview[]
+}

@@ -3,6 +3,7 @@ export interface Topic {
   name: string
   description: string | null
   created_at: string
+  question_count: number
 }
 
 export interface TopicCreate {

@@ -1,5 +1,5 @@
 import api from './api'
-import type { Question, QuestionCreate, QuestionUpdate, QuestionImportPreview } from '../types/question'
+import type { Question, QuestionCreate, QuestionUpdate, QuestionImportPreview, QuestionImportConfirm } from '../types/question'
 
 export const questionService = {
   list: async (params?: { topic_id?: number; search?: string }): Promise<Question[]> => {
@@ -32,6 +32,11 @@ export const questionService = {
     const res = await api.post<QuestionImportPreview>('/questions/import', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+    return res.data
+  },
+
+  confirmImport: async (data: QuestionImportConfirm): Promise<Question[]> => {
+    const res = await api.post<Question[]>('/questions/import/confirm', data)
     return res.data
   },
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Download, Key } from 'lucide-react'
+import { ArrowLeft, Download, Key, ExternalLink } from 'lucide-react'
 import { useVersionPreview } from '../../hooks/useVersions'
 import { AnswerKeyTable } from '../../components/AnswerKeyTable/AnswerKeyTable'
 import { versionService } from '../../services/versionService'
@@ -20,6 +20,7 @@ export function ExamPreviewPage() {
   const { data: preview, isLoading, error } = useVersionPreview(id)
   const [showAnswerKey, setShowAnswerKey] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const [openingPdf, setOpeningPdf] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
 
   const handleDownload = async () => {
@@ -33,6 +34,22 @@ export function ExamPreviewPage() {
       setDownloadError(getErrorMessage(err))
     } finally {
       setDownloading(false)
+    }
+  }
+
+  const handleOpenPdf = async () => {
+    if (!preview) return
+    setOpeningPdf(true)
+    setDownloadError(null)
+    try {
+      const blob = await versionService.downloadPdf(id)
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (err) {
+      setDownloadError(getErrorMessage(err))
+    } finally {
+      setOpeningPdf(false)
     }
   }
 
@@ -60,6 +77,9 @@ export function ExamPreviewPage() {
           >
             <Key size={14} />
             {showAnswerKey ? 'Ocultar clave' : 'Ver clave'}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={handleOpenPdf} loading={openingPdf}>
+            <ExternalLink size={14} /> Ver PDF
           </Button>
           <Button size="sm" onClick={handleDownload} loading={downloading}>
             <Download size={14} /> Descargar PDF
