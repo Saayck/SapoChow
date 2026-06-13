@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Upload, X, Image as ImageIcon } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 import { validateImageFile } from '../../utils/validators'
 import { clsx } from 'clsx'
 
@@ -41,7 +41,7 @@ export function ImageUploader({ onFile, currentUrl, onRemove, loading, error, la
             <button
               type="button"
               onClick={() => { setPreview(null); onRemove() }}
-              className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm"
             >
               <X size={12} />
             </button>
@@ -61,10 +61,10 @@ export function ImageUploader({ onFile, currentUrl, onRemove, loading, error, la
           )}
         >
           {loading ? (
-            <div className="w-6 h-6 border-[3px] border-gray-200 border-t-primary-500 rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-gray-200 border-t-primary-500 rounded-full animate-spin" />
           ) : (
             <>
-              <Upload size={20} className="text-gray-400" />
+              <Upload size={18} className="text-gray-400" />
               <span className="text-xs font-medium text-gray-500">Subir imagen</span>
             </>
           )}

@@ -80,44 +80,43 @@ export function VersionGeneratorPage() {
   if (examError || !exam) return <ErrorMessage message="No se pudo cargar el examen" />
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-          <ArrowLeft size={20} />
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex items-start gap-4">
+        <button onClick={() => navigate(-1)} className="rounded-xl p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all shrink-0 mt-0.5">
+          <ArrowLeft size={18} />
         </button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">{exam.title}</h1>
-          <p className="text-gray-500 text-sm">{exam.institution_name} — {exam.teacher_name}</p>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight truncate">{exam.title}</h1>
+          <p className="text-gray-400 text-sm truncate">{exam.institution_name} — {exam.teacher_name}</p>
         </div>
         <Button
           variant="secondary"
           size="sm"
           onClick={() => navigate(`/exams/${id}/edit`)}
+          className="shrink-0 mt-0.5"
         >
-          <Pencil size={14} /> Editar
+          <Pencil size={13} /> Editar
         </Button>
       </div>
 
-      {/* Exam config summary */}
       {exam.config && (
         <Card title="Configuración">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { label: 'Temas', value: exam.config.total_topics },
               { label: 'Preguntas/tema', value: exam.config.questions_per_topic },
               { label: 'Total preguntas', value: exam.config.total_questions },
               { label: 'Versiones', value: exam.config.version_count },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-gray-50 rounded-xl p-4 transition-colors hover:bg-gray-100">
-                <p className="text-2xl font-bold text-gray-900">{value}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+              <div key={label} className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 p-4 text-center transition-all hover:border-gray-200">
+                <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
+                <p className="text-xs text-gray-400 mt-0.5 font-medium">{label}</p>
               </div>
             ))}
           </div>
         </Card>
       )}
 
-      {/* Generate section */}
       <Card
         title="Versiones del examen"
         action={
@@ -129,17 +128,17 @@ export function VersionGeneratorPage() {
                 onClick={handleDownloadZip}
                 loading={downloadingZip}
               >
-                <FileArchive size={14} /> Exportar ZIP
+                <FileArchive size={13} /> Exportar ZIP
               </Button>
             )}
             <Button size="sm" onClick={handleGenerate} loading={generating}>
-              <Shuffle size={14} /> Generar versiones
+              <Shuffle size={13} /> Generar versiones
             </Button>
           </div>
         }
       >
         {actionError && (
-          <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
+          <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-4">
             {actionError}
           </p>
         )}
@@ -148,8 +147,8 @@ export function VersionGeneratorPage() {
           <LoadingState message="Cargando versiones..." />
         ) : !versions?.length ? (
           <div className="flex flex-col items-center py-14 text-gray-400">
-            <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-              <Shuffle size={28} className="text-gray-300" />
+            <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
+              <Shuffle size={24} className="text-gray-300" />
             </div>
             <p className="font-medium text-gray-500">No hay versiones generadas</p>
             <p className="text-sm mt-1">Haz clic en "Generar versiones" para comenzar</p>
@@ -159,25 +158,25 @@ export function VersionGeneratorPage() {
             {versions.map((v) => (
               <div
                 key={v.id}
-                className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 transition-all hover:bg-gray-100"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 transition-all hover:border-gray-200 hover:shadow-sm"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-sidebar to-sidebar-active text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                  <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
                     {v.version_code}
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-800">Versión {v.version_code}</p>
                     <p className="text-xs text-gray-400">
                       Creada el {new Date(v.created_at).toLocaleDateString('es-PE')}
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 sm:gap-2 flex-wrap">
                   <Link
                     to={`/versions/${v.id}/preview`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm border border-transparent hover:border-gray-200 transition-all"
+                    className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all"
                   >
-                    <Eye size={14} /> Vista previa
+                    <Eye size={13} className="shrink-0" /> <span className="hidden sm:inline">Vista previa</span>
                   </Link>
                   <Button
                     variant="secondary"
@@ -186,7 +185,7 @@ export function VersionGeneratorPage() {
                     loading={openingPdf === v.id}
                     title="Abrir PDF en nueva pestaña"
                   >
-                    <ExternalLink size={14} /> Ver PDF
+                    <ExternalLink size={13} className="sm:mr-1" /> <span className="hidden sm:inline">Ver PDF</span>
                   </Button>
                   <Button
                     variant="secondary"
@@ -194,7 +193,7 @@ export function VersionGeneratorPage() {
                     onClick={() => handleDownloadPdf(v.id, v.version_code)}
                     loading={downloading === v.id}
                   >
-                    <Download size={14} />
+                    <Download size={13} />
                   </Button>
                 </div>
               </div>

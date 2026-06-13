@@ -71,11 +71,10 @@ export function AlternativeManager({ value, onChange, imageFiles, onImageFiles, 
           key={i}
           className={clsx(
             'border rounded-xl p-4 transition-all duration-200',
-            alt.is_correct ? 'border-emerald-300 bg-emerald-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+            alt.is_correct ? 'border-emerald-300 bg-emerald-50/40 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
           )}
         >
           <div className="flex items-start gap-3">
-            {/* Letter badge */}
             <button
               type="button"
               onClick={() => markCorrect(i)}
@@ -90,23 +89,20 @@ export function AlternativeManager({ value, onChange, imageFiles, onImageFiles, 
             </button>
 
             <div className="flex-1 space-y-2">
-              {/* Text content */}
               <input
                 type="text"
                 value={alt.content_text ?? ''}
                 onChange={(e) => update(i, { content_text: e.target.value })}
                 placeholder={`Texto de alternativa ${LETTERS[i]}...`}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-150"
+                className="block w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/15 focus:border-primary-400 transition-all duration-150 hover:border-gray-300"
               />
 
-              {/* LaTeX content */}
               <LatexEditor
                 value={alt.content_latex ?? ''}
                 onChange={(v) => update(i, { content_latex: v })}
                 placeholder="LaTeX opcional..."
               />
 
-              {/* Image upload per alternative */}
               {onImageFiles && imageFiles && (
                 <ImageUploader
                   label="Imagen de alternativa (opcional)"
@@ -120,7 +116,6 @@ export function AlternativeManager({ value, onChange, imageFiles, onImageFiles, 
               )}
             </div>
 
-            {/* Mark as correct */}
             <button
               type="button"
               onClick={() => markCorrect(i)}
@@ -130,7 +125,7 @@ export function AlternativeManager({ value, onChange, imageFiles, onImageFiles, 
                 alt.is_correct ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
               )}
             >
-              {alt.is_correct ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+              {alt.is_correct ? <CheckCircle2 size={20} /> : <Circle size={20} />}
             </button>
           </div>
         </div>

@@ -46,11 +46,11 @@ function QuestionCard({ question, topicName, onEdit, onDelete }: {
   const correct = question.alternatives.find((a) => a.is_correct)
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-card overflow-hidden transition-all duration-200 hover:shadow-card-hover hover:border-gray-300">
+    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-card overflow-hidden transition-all duration-200 hover:shadow-card-hover hover:border-gray-300">
       <div className="px-5 py-4 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           {topicName && (
-            <span className="inline-flex items-center text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-lg mb-2">
+            <span className="inline-flex items-center text-xs font-medium text-primary-600 bg-primary-50/80 px-2 py-0.5 rounded-lg border border-primary-100 mb-2">
               {topicName}
             </span>
           )}
@@ -76,20 +76,20 @@ function QuestionCard({ question, topicName, onEdit, onDelete }: {
             className="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
             title={expanded ? 'Colapsar' : 'Expandir'}
           >
-            {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
-          <button onClick={onEdit} className="rounded-lg p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="Editar">
-            <Pencil size={15} />
+          <button onClick={onEdit} className="rounded-lg p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-all" title="Editar">
+            <Pencil size={14} />
           </button>
-          <button onClick={onDelete} className="rounded-lg p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all" title="Eliminar">
-            <Trash2 size={15} />
+          <button onClick={onDelete} className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all" title="Eliminar">
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
       {expanded && (
-        <div className="border-t border-gray-100 px-5 py-4 bg-gray-50/50 space-y-2">
+        <div className="border-t border-gray-100 px-5 py-4 bg-gray-50/30 space-y-2">
           {question.image_path && (
-            <img src={question.image_path} alt="question" className="max-h-40 rounded-lg mb-2" />
+            <img src={question.image_path} alt="question" className="max-h-40 rounded-xl mb-2" />
           )}
           {question.alternatives.map((alt, i) => (
             <div
@@ -105,7 +105,7 @@ function QuestionCard({ question, topicName, onEdit, onDelete }: {
               <div className="flex-1">
                 <span>{alt.content_text || alt.content_latex}</span>
                 {alt.image_path && (
-                  <img src={alt.image_path} alt={`alt-${i}`} className="mt-1 max-h-16 rounded-lg" />
+                  <img src={alt.image_path} alt={`alt-${i}`} className="mt-1 max-h-16 rounded-xl" />
                 )}
               </div>
             </div>
@@ -158,7 +158,7 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
       <div className="space-y-4">
         {preview.warnings.length > 0 && (
           <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+            <AlertTriangle size={15} className="shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               {preview.warnings.map((w, i) => <p key={i}>{w}</p>)}
             </div>
@@ -169,23 +169,19 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Asignar a tema <span className="text-red-500">*</span>
           </label>
-          <select
-            value={topicId}
+          <Select
+            options={topicOptions}
+            value={String(topicId)}
             onChange={(e) => { setTopicId(Number(e.target.value)); setSubmitError(null) }}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all"
-          >
-            {topicOptions.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
+          />
         </div>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-400">
           {preview.detected_questions.length} pregunta{preview.detected_questions.length !== 1 ? 's' : ''} detectada{preview.detected_questions.length !== 1 ? 's' : ''}.
           Selecciona las que deseas guardar.
         </p>
 
-        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-thin">
           {preview.detected_questions.map((q, i) => {
             const hasWarnings = q.warnings.length > 0
             return (
@@ -195,7 +191,7 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
                   'rounded-xl border px-4 py-3 cursor-pointer transition-all',
                   selected[i]
                     ? 'border-primary-300 bg-primary-50/40'
-                    : 'border-gray-200 bg-gray-50/50 opacity-60'
+                    : 'border-gray-200 bg-gray-50/50 opacity-60 hover:opacity-80'
                 )}
                 onClick={() => toggle(i)}
               >
@@ -221,7 +217,7 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
                             {String.fromCharCode(65 + ai)}
                           </span>
                           <span>{alt.content_text || alt.content_latex}</span>
-                          {alt.is_correct && <CheckCircle2 size={12} className="text-emerald-500" />}
+                          {alt.is_correct && <CheckCircle2 size={11} className="text-emerald-500" />}
                         </div>
                       ))}
                     </div>
@@ -229,7 +225,7 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
                       <div className="mt-2 space-y-0.5">
                         {q.warnings.map((w, wi) => (
                           <p key={wi} className="text-xs text-amber-600 flex items-center gap-1">
-                            <AlertTriangle size={11} />
+                            <AlertTriangle size={10} />
                             {w}
                           </p>
                         ))}
@@ -244,12 +240,12 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
 
         {submitError && (
           <p className="text-sm text-red-500 flex items-center gap-1">
-            <AlertTriangle size={14} /> {submitError}
+            <AlertTriangle size={13} /> {submitError}
           </p>
         )}
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             {selectedQuestions.length} de {preview.detected_questions.length} seleccionada{selectedQuestions.length !== 1 ? 's' : ''}
           </p>
           <div className="flex gap-2">
@@ -412,16 +408,16 @@ export function QuestionBankPage() {
   const isSaving = createMutation.isPending || updateMutation.isPending || uploadImageMutation.isPending
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Banco de preguntas</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{questions?.length ?? 0} pregunta(s)</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Banco de preguntas</h1>
+          <p className="text-gray-400 text-sm mt-1">{questions?.length ?? 0} pregunta(s)</p>
         </div>
         <div className="flex gap-2">
           <label className={clsx(
-            'cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150',
-            'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm hover:shadow',
+            'cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-150 border shadow-sm',
+            'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300',
             importMutation.isPending && 'opacity-50 pointer-events-none'
           )}>
             {importMutation.isPending ? (
@@ -436,21 +432,20 @@ export function QuestionBankPage() {
             <input type="file" accept=".docx,.pdf" className="hidden" onChange={handleImport} />
           </label>
           <Button onClick={openCreate}>
-            <Plus size={16} /> Nueva pregunta
+            <Plus size={15} /> Nueva pregunta
           </Button>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar pregunta..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-150"
+            className="block w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3.5 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/15 focus:border-primary-400 transition-all duration-150 hover:border-gray-300"
           />
         </div>
         <div className="sm:w-56">
@@ -465,8 +460,8 @@ export function QuestionBankPage() {
       {questions?.length === 0 ? (
         <Card>
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-              <HelpCircle size={28} className="text-gray-300" />
+            <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
+              <HelpCircle size={24} className="text-gray-300" />
             </div>
             <p className="font-medium text-gray-500">
               {search ? `Sin resultados para "${search}"` : 'No hay preguntas' + (topicFilter ? ' en este tema' : '')}
@@ -488,7 +483,6 @@ export function QuestionBankPage() {
         </div>
       )}
 
-      {/* Create / Edit modal */}
       <Modal
         open={showForm}
         onClose={() => setShowForm(false)}
@@ -515,7 +509,7 @@ export function QuestionBankPage() {
             <input
               type="text"
               placeholder="Texto del enunciado..."
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-150"
+              className="block w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/15 focus:border-primary-400 transition-all duration-150 hover:border-gray-300"
               {...register('statement_text')}
             />
           </div>
@@ -555,9 +549,8 @@ export function QuestionBankPage() {
         </form>
       </Modal>
 
-      {/* Delete confirmation */}
       <Modal open={deleting !== null} onClose={() => setDeleting(null)} title="Eliminar pregunta" size="sm">
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-500 mb-4">
           ¿Seguro que deseas eliminar esta pregunta? La acción no se puede deshacer.
         </p>
         <div className="flex justify-end gap-2">
@@ -576,7 +569,6 @@ export function QuestionBankPage() {
         </div>
       </Modal>
 
-      {/* Import preview modal */}
       {importPreview && (
         <ImportPreviewModal
           preview={importPreview}

@@ -57,72 +57,68 @@ export function ExamPreviewPage() {
   if (error || !preview) return <ErrorMessage message="No se pudo cargar la vista previa" />
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-          <ArrowLeft size={20} />
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex flex-wrap items-start gap-3">
+        <button onClick={() => navigate(-1)} className="rounded-xl p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all shrink-0 mt-0.5">
+          <ArrowLeft size={18} />
         </button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">
+        <div className="flex-1 min-w-0 order-3 sm:order-none sm:min-w-0 basis-full sm:basis-auto">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
             Vista previa — Versión {preview.version_code}
           </h1>
-          <p className="text-gray-500 text-sm">{preview.exam.title}</p>
+          <p className="text-gray-400 text-sm truncate">{preview.exam.title}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2 flex-wrap ml-auto">
           <Button
             variant="secondary"
             size="sm"
             onClick={() => setShowAnswerKey((s) => !s)}
           >
-            <Key size={14} />
-            {showAnswerKey ? 'Ocultar clave' : 'Ver clave'}
+            <Key size={13} />
+            <span className="hidden sm:inline">{showAnswerKey ? 'Ocultar clave' : 'Ver clave'}</span>
           </Button>
           <Button variant="secondary" size="sm" onClick={handleOpenPdf} loading={openingPdf}>
-            <ExternalLink size={14} /> Ver PDF
+            <ExternalLink size={13} /> <span className="hidden sm:inline">Ver PDF</span>
           </Button>
           <Button size="sm" onClick={handleDownload} loading={downloading}>
-            <Download size={14} /> Descargar PDF
+            <Download size={13} /> <span className="hidden sm:inline">Descargar PDF</span>
           </Button>
         </div>
       </div>
 
       {downloadError && (
-        <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
           {downloadError}
         </p>
       )}
 
-      {/* Answer key panel */}
       {showAnswerKey && (
-        <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-5 animate-slide-up">
+        <div className="bg-amber-50/60 border border-amber-200/60 rounded-xl p-5 animate-slide-down">
           <AnswerKeyTable versionId={id} versionCode={preview.version_code} />
         </div>
       )}
 
-      {/* Exam header */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-card p-6 space-y-3">
-        <h2 className="text-xl font-bold text-center text-gray-900">{preview.exam.title}</h2>
-        <p className="text-center text-gray-600">{preview.exam.institution_name}</p>
-        <div className="flex justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
+      <div className="bg-white border border-gray-200/80 rounded-2xl shadow-card p-6 space-y-3">
+        <h2 className="text-xl font-bold text-center text-gray-900 tracking-tight">{preview.exam.title}</h2>
+        <p className="text-center text-gray-500">{preview.exam.institution_name}</p>
+        <div className="flex flex-wrap justify-between gap-2 text-sm text-gray-400 pt-3 border-t border-gray-100">
           <span>Docente: {preview.exam.teacher_name}</span>
           <span>Fecha: {new Date(preview.exam.exam_date).toLocaleDateString('es-PE')}</span>
           <span className="font-semibold text-primary-600">Versión {preview.version_code}</span>
         </div>
         {preview.exam.instructions && (
-          <div className="mt-3 bg-blue-50/80 border border-blue-100 rounded-xl p-4">
-            <p className="text-sm font-medium text-blue-800 mb-1">Instrucciones:</p>
-            <p className="text-sm text-blue-700">{preview.exam.instructions}</p>
+          <div className="mt-3 bg-primary-50/60 border border-primary-100 rounded-xl p-4">
+            <p className="text-sm font-medium text-primary-800 mb-1">Instrucciones:</p>
+            <p className="text-sm text-primary-700">{preview.exam.instructions}</p>
           </div>
         )}
       </div>
 
-      {/* Questions */}
       <div className="space-y-4">
         {preview.questions.map((q) => (
-          <div key={q.number} className="bg-white border border-gray-200 rounded-xl shadow-card p-6">
+          <div key={q.number} className="bg-white border border-gray-200/80 rounded-2xl shadow-card p-6">
             <div className="flex gap-4 mb-4">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-sidebar to-sidebar-active text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
+              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
                 {q.number}
               </span>
               <div className="flex-1 pt-0.5">
@@ -136,7 +132,7 @@ export function ExamPreviewPage() {
                   />
                 )}
                 {q.image_path && (
-                  <img src={q.image_path} alt={`Pregunta ${q.number}`} className="mt-3 max-h-48 rounded-lg border border-gray-100" />
+                  <img src={q.image_path} alt={`Pregunta ${q.number}`} className="mt-3 max-h-48 rounded-xl border border-gray-100" />
                 )}
               </div>
             </div>
@@ -147,7 +143,7 @@ export function ExamPreviewPage() {
                   key={alt.letter}
                   className={clsx(
                     'flex items-start gap-3 text-sm rounded-xl px-4 py-2.5 transition-colors',
-                    alt.is_correct ? 'bg-emerald-50/80 border border-emerald-200/80' : 'bg-gray-50/80 border border-gray-100'
+                    alt.is_correct ? 'bg-emerald-50/60 border border-emerald-200/60' : 'bg-gray-50/60 border border-gray-100'
                   )}
                 >
                   <span className={clsx(
@@ -164,7 +160,7 @@ export function ExamPreviewPage() {
                       />
                     )}
                     {alt.image_path && (
-                      <img src={alt.image_path} alt={`Alt ${alt.letter}`} className="mt-1 max-h-20 rounded-lg border border-gray-100" />
+                      <img src={alt.image_path} alt={`Alt ${alt.letter}`} className="mt-1 max-h-20 rounded-xl border border-gray-100" />
                     )}
                   </div>
                 </div>

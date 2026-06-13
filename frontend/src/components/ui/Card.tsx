@@ -14,7 +14,7 @@ export function Card({ children, className, title, subtitle, action, hover }: Ca
   return (
     <div
       className={clsx(
-        'bg-white rounded-xl border border-gray-200 shadow-card transition-all duration-200',
+        'bg-white rounded-2xl border border-gray-200/80 shadow-card transition-all duration-200',
         hover && 'hover:shadow-card-hover hover:border-gray-300',
         className
       )}
@@ -28,7 +28,7 @@ export function Card({ children, className, title, subtitle, action, hover }: Ca
           {action && <div className="shrink-0 ml-4">{action}</div>}
         </div>
       )}
-      <div className={clsx((title || action) ? 'p-6' : 'p-6')}>{children}</div>
+      <div className={clsx('p-6', !title && !action && '')}>{children}</div>
     </div>
   )
 }

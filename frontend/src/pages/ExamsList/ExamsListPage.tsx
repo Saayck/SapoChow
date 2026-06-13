@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  FileText, Plus, Eye, Shuffle, Pencil, Trash2, Calendar,
-  Building2, User, Layers, ArrowRight, GraduationCap,
+  FileText, Plus, Eye, Pencil, Trash2, Calendar,
+  Building2, User, Layers, ArrowRight,
 } from 'lucide-react'
 import { useExams, useDeleteExam } from '../../hooks/useExams'
 import { Button } from '../../components/ui/Button'
@@ -35,49 +35,45 @@ export function ExamsListPage() {
   if (error) return <ErrorMessage message="No se pudieron cargar los exámenes" onRetry={refetch} />
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
+    <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Exámenes</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Exámenes</h1>
+          <p className="text-gray-400 text-sm mt-1">
             {exams?.length
               ? `Tienes ${exams.length} examen${exams.length !== 1 ? 'es' : ''} creado${exams.length !== 1 ? 's' : ''}`
               : 'Gestiona y administra tus exámenes'}
           </p>
         </div>
         <Button onClick={() => navigate('/exams/new')}>
-          <Plus size={16} /> Nuevo examen
+          <Plus size={15} /> Nuevo examen
         </Button>
       </div>
 
-      {/* Empty state */}
       {exams?.length === 0 ? (
         <Card>
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-              <FileText size={28} className="text-gray-300" />
+            <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
+              <FileText size={24} className="text-gray-300" />
             </div>
             <p className="font-medium text-gray-500">No hay exámenes aún</p>
             <p className="text-sm mt-1">Crea tu primer examen para comenzar</p>
-            <Button className="mt-4" onClick={() => navigate('/exams/new')}>
-              <Plus size={16} /> Crear examen
+            <Button className="mt-5" onClick={() => navigate('/exams/new')}>
+              <Plus size={15} /> Crear examen
             </Button>
           </div>
         </Card>
       ) : (
-        /* Exam list */
         <div className="grid gap-4">
           {exams?.map((exam) => (
             <div
               key={exam.id}
-              className="group bg-white border border-gray-200 rounded-xl shadow-card p-6 hover:shadow-card-hover hover:border-gray-300 transition-all duration-200"
+              className="group bg-white border border-gray-200/80 rounded-2xl shadow-card p-6 hover:shadow-card-hover hover:border-gray-300 transition-all duration-200"
             >
               <div className="flex items-start justify-between gap-4">
-                {/* Left: Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-sm shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-sm shadow-emerald-500/10 shrink-0">
                       <FileText size={18} className="text-white" />
                     </div>
                     <div className="min-w-0">
@@ -87,7 +83,7 @@ export function ExamsListPage() {
                       >
                         {exam.title}
                       </h3>
-                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                      <div className="flex items-center gap-3 text-xs text-gray-400 mt-0.5">
                         <span className="flex items-center gap-1">
                           <Calendar size={11} />
                           {new Date(exam.exam_date).toLocaleDateString('es-PE')}
@@ -102,7 +98,7 @@ export function ExamsListPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                     <span className="flex items-center gap-1.5">
                       <Building2 size={14} className="text-gray-400" />
                       {exam.institution_name}
@@ -113,18 +109,17 @@ export function ExamsListPage() {
                     </span>
                     {exam.config && (
                       <span className="flex items-center gap-1.5">
-                        <GraduationCap size={14} className="text-gray-400" />
+                        <Layers size={14} className="text-gray-400" />
                         {exam.config.total_questions} pregunta{exam.config.total_questions !== 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
 
                   {exam.instructions && (
-                    <p className="text-sm text-gray-500 mt-2 line-clamp-1">{exam.instructions}</p>
+                    <p className="text-sm text-gray-400 mt-2 line-clamp-1">{exam.instructions}</p>
                   )}
                 </div>
 
-                {/* Right: Actions */}
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => navigate(`/exams/${exam.id}/versions`)}
@@ -142,7 +137,7 @@ export function ExamsListPage() {
                   </button>
                   <button
                     onClick={() => setDeleting(exam)}
-                    className="rounded-lg p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                    className="rounded-lg p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
                     title="Eliminar"
                   >
                     <Trash2 size={16} />
@@ -150,20 +145,14 @@ export function ExamsListPage() {
                 </div>
               </div>
 
-              {/* Bottom: Quick actions */}
               <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() => navigate(`/exams/${exam.id}/versions`)}
                 >
-                  <Shuffle size={13} /> Versiones
+                  <Eye size={13} /> Versiones
                 </Button>
-                {exam.config && (
-                  <span className="text-xs text-gray-400">
-                    {/* Topics summary could go here */}
-                  </span>
-                )}
                 <button
                   onClick={() => navigate(`/exams/${exam.id}/versions`)}
                   className="ml-auto text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1 transition-colors"
@@ -176,19 +165,18 @@ export function ExamsListPage() {
         </div>
       )}
 
-      {/* Delete confirmation */}
       <Modal
         open={deleting !== null}
         onClose={() => { setDeleting(null); setDeleteError(null) }}
         title="Eliminar examen"
         size="sm"
       >
-        <p className="text-sm text-gray-600 mb-4">
-          ¿Estás seguro de que deseas eliminar <strong>{deleting?.title}</strong>?
+        <p className="text-sm text-gray-500 mb-4">
+          ¿Estás seguro de que deseas eliminar <strong className="text-gray-700">{deleting?.title}</strong>?
           Esta acción eliminará también todas sus versiones y no se puede deshacer.
         </p>
         {deleteError && (
-          <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">
+          <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5 mb-4">
             {deleteError}
           </p>
         )}
