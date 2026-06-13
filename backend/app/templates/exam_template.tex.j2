@@ -59,13 +59,13 @@
     ((*- endif *))
     ((*- if q.image_path *))
       \begin{center}
-        \includegraphics[max width=0.6\textwidth]{((( q.image_path )))}
+        \includegraphics[width=0.6\textwidth,keepaspectratio]{((( q.image_path )))}
       \end{center}
     ((*- endif *))
 
     \begin{enumerate}[leftmargin=1.5cm, label=\textbf{\Alph*.}]
     ((*- for alt in q.alternatives *))
-      \item[((*  alt.letter *)).]
+      \item[((( alt.letter )))].
         ((*- if alt.content_latex *))
           $((( alt.content_latex )))$
         ((*- elif alt.content_text *))
@@ -73,7 +73,7 @@
         ((*- endif *))
         ((*- if alt.image_path *))
           \begin{center}
-            \includegraphics[max width=0.4\textwidth]{((( alt.image_path )))}
+            \includegraphics[width=0.4\textwidth,keepaspectratio]{((( alt.image_path )))}
           \end{center}
         ((*- endif *))
     ((*- endfor *))

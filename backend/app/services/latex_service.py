@@ -67,7 +67,6 @@ def _escape_latex(text: str | None) -> str:
     if not text:
         return ""
     replacements = [
-        ("\\", r"\textbackslash{}"),
         ("&", r"\&"),
         ("%", r"\%"),
         ("$", r"\$"),
@@ -77,6 +76,7 @@ def _escape_latex(text: str | None) -> str:
         ("}", r"\}"),
         ("~", r"\textasciitilde{}"),
         ("^", r"\textasciicircum{}"),
+        ("\\", r"\textbackslash{}"),
     ]
     for char, replacement in replacements:
         text = text.replace(char, replacement)
