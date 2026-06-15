@@ -8,6 +8,7 @@ from app.models.exam_topic import ExamTopic
 from app.models.exam_version import ExamVersion
 from app.models.exam_version_question import ExamVersionQuestion
 from app.models.exam_version_alternative import ExamVersionAlternative
+from app.models.revoked_token import RevokedToken
 
 __all__ = [
     "User",
@@ -20,4 +21,5 @@ __all__ = [
     "ExamVersion",
     "ExamVersionQuestion",
     "ExamVersionAlternative",
+    "RevokedToken",
 ]

@@ -8,11 +8,11 @@ from app.models.exam_topic import ExamTopic
 from app.models.topic import Topic
 from app.models.question import Question
 from app.models.alternative import Alternative
-from app.schemas.exam import ExamCreate, ExamUpdate
+from app.schemas.exam import ExamCreate, ExamUpdate, ExamConfigUpdate, ExamTopicsUpdate
 from app.utils.exceptions import NotFoundError, ValidationError
 
 
-async def _validate_exam_topics(topics_data, config_data, db: AsyncSession):
+async def _validate_exam_topics(topics_data, config_data, db: AsyncSession):  # config_data unused, kept for call-site compatibility
     for topic_in in topics_data:
         result = await db.execute(select(Topic).where(Topic.id == topic_in.topic_id))
         topic = result.scalar_one_or_none()
@@ -85,10 +85,12 @@ async def get_exam(exam_id: int, db: AsyncSession) -> Exam:
     return exam
 
 
-async def list_exams(db: AsyncSession) -> list[Exam]:
+async def list_exams(db: AsyncSession, skip: int = 0, limit: int = 50) -> list[Exam]:
     result = await db.execute(
         select(Exam).options(selectinload(Exam.config), selectinload(Exam.exam_topics))
         .order_by(Exam.created_at.desc())
+        .offset(skip)
+        .limit(limit)
     )
     return list(result.scalars().all())
 
@@ -107,3 +109,50 @@ async def delete_exam(exam_id: int, db: AsyncSession) -> None:
     exam = await get_exam(exam_id, db)
     await db.delete(exam)
     await db.flush()
+
+
+async def update_exam_config(exam_id: int, data: ExamConfigUpdate, db: AsyncSession) -> Exam:
+    exam = await get_exam(exam_id, db)
+    if not exam.config:
+        raise NotFoundError("ExamConfig for exam", exam_id)
+
+    config = exam.config
+    config.total_questions = data.total_questions
+    config.total_topics = data.total_topics
+    config.questions_per_topic = data.questions_per_topic
+    config.version_count = data.version_count
+    await db.flush()
+    return await get_exam(exam_id, db)
+
+
+async def update_exam_topics(exam_id: int, data: ExamTopicsUpdate, db: AsyncSession) -> Exam:
+    exam = await get_exam(exam_id, db)
+
+    if exam.config and len(data.topics) != exam.config.total_topics:
+        raise ValidationError(
+            f"Number of topics ({len(data.topics)}) must match total_topics in config ({exam.config.total_topics}). "
+            "Update the exam config first if you need a different number of topics."
+        )
+
+    if exam.config:
+        for t in data.topics:
+            if t.questions_count != exam.config.questions_per_topic:
+                raise ValidationError(
+                    f"Each topic must contribute exactly {exam.config.questions_per_topic} questions "
+                    f"(questions_per_topic in config), but topic_id={t.topic_id} has {t.questions_count}"
+                )
+
+    await _validate_exam_topics(data.topics, None, db)
+
+    for old_et in list(exam.exam_topics):
+        await db.delete(old_et)
+    await db.flush()
+
+    for topic_in in data.topics:
+        db.add(ExamTopic(
+            exam_id=exam_id,
+            topic_id=topic_in.topic_id,
+            questions_count=topic_in.questions_count,
+        ))
+    await db.flush()
+    return await get_exam(exam_id, db)

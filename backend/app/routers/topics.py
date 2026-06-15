@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
@@ -14,12 +14,18 @@ router = APIRouter(prefix="/topics", tags=["Topics"])
 
 
 @router.get("", response_model=list[TopicResponse])
-async def list_topics(db: AsyncSession = Depends(get_db)):
+async def list_topics(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(
         select(Topic, func.count(Question.id).label("question_count"))
         .outerjoin(Question, Question.topic_id == Topic.id)
         .group_by(Topic.id)
         .order_by(Topic.created_at.desc())
+        .offset(skip)
+        .limit(limit)
     )
     rows = result.all()
     return [

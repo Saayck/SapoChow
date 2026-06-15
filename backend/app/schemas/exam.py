@@ -72,6 +72,34 @@ class ExamUpdate(BaseModel):
     instructions: str | None = None
 
 
+class ExamConfigUpdate(BaseModel):
+    total_questions: int
+    total_topics: int
+    questions_per_topic: int
+    version_count: int
+
+    @model_validator(mode="after")
+    def validate_config(self) -> "ExamConfigUpdate":
+        if self.total_questions <= 0:
+            raise ValueError("total_questions must be greater than 0")
+        if self.total_topics <= 0:
+            raise ValueError("total_topics must be greater than 0")
+        if self.questions_per_topic <= 0:
+            raise ValueError("questions_per_topic must be greater than 0")
+        if self.version_count <= 0:
+            raise ValueError("version_count must be greater than 0")
+        if self.total_questions != self.total_topics * self.questions_per_topic:
+            raise ValueError(
+                f"total_questions ({self.total_questions}) must equal "
+                f"total_topics ({self.total_topics}) × questions_per_topic ({self.questions_per_topic})"
+            )
+        return self
+
+
+class ExamTopicsUpdate(BaseModel):
+    topics: list[ExamTopicCreate]
+
+
 class ExamConfigResponse(BaseModel):
     model_config = {"from_attributes": True}
 

@@ -82,6 +82,12 @@ async def generate_versions(exam_id: int, seed: int | None, db: AsyncSession) ->
             )
         topic_questions[et.topic_id] = valid
 
+    # Delete any previously generated versions for this exam before regenerating
+    existing_result = await db.execute(select(ExamVersion).where(ExamVersion.exam_id == exam_id))
+    for old_version in existing_result.scalars().all():
+        await db.delete(old_version)
+    await db.flush()
+
     rng = random.Random(seed)
     generated: list[GeneratedVersionItem] = []
 

@@ -23,6 +23,8 @@ router = APIRouter(prefix="/questions", tags=["Questions"])
 async def list_questions(
     topic_id: int | None = Query(None),
     search: str | None = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Question).options(selectinload(Question.alternatives)).order_by(Question.created_at.desc())
@@ -30,6 +32,7 @@ async def list_questions(
         query = query.where(Question.topic_id == topic_id)
     if search:
         query = query.where(Question.statement_text.ilike(f"%{search}%"))
+    query = query.offset(skip).limit(limit)
     result = await db.execute(query)
     return list(result.scalars().all())
 

@@ -7,6 +7,7 @@ directly is simpler, faster, and fully supported on Python 3.11+.
 """
 from datetime import datetime, timedelta, timezone
 from typing import Any
+import uuid
 
 import bcrypt
 from jose import JWTError, jwt
@@ -42,7 +43,12 @@ def verify_password(plain: str, hashed: str) -> bool:
 # ── JWT ───────────────────────────────────────────────────────────────────────
 
 def _build_token(subject: Any, token_type: str, expire: datetime) -> str:
-    payload = {"sub": str(subject), "exp": expire, "type": token_type}
+    payload = {
+        "sub": str(subject),
+        "exp": expire,
+        "type": token_type,
+        "jti": str(uuid.uuid4()),
+    }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
@@ -56,8 +62,7 @@ def create_refresh_token(subject: Any) -> str:
     return _build_token(subject, "refresh", expire)
 
 
-def decode_token(token: str, token_type: str = "access") -> str:
-    """Decode and validate a JWT. Returns the subject (user id as string)."""
+def _decode_raw(token: str, token_type: str) -> dict:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     except JWTError:
@@ -66,11 +71,21 @@ def decode_token(token: str, token_type: str = "access") -> str:
     if payload.get("type") != token_type:
         raise UnauthorizedError(f"Expected token type '{token_type}'")
 
+    return payload
+
+
+def decode_token(token: str, token_type: str = "access") -> str:
+    """Decode and validate a JWT. Returns the subject (user id as string)."""
+    payload = _decode_raw(token, token_type)
     subject: str | None = payload.get("sub")
     if not subject:
         raise UnauthorizedError("Token is missing subject claim")
-
     return subject
+
+
+def decode_token_full(token: str, token_type: str = "access") -> dict:
+    """Decode and validate a JWT. Returns the full payload dict."""
+    return _decode_raw(token, token_type)
 
 
 # ── FastAPI dependency ────────────────────────────────────────────────────────

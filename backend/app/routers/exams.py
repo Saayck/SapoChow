@@ -1,20 +1,24 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.exam import Exam
-from app.schemas.exam import ExamCreate, ExamUpdate, ExamResponse
-from app.services.exam_service import create_exam, get_exam, list_exams, update_exam, delete_exam
+from app.schemas.exam import ExamCreate, ExamUpdate, ExamResponse, ExamConfigUpdate, ExamTopicsUpdate
+from app.services.exam_service import create_exam, get_exam, list_exams, update_exam, delete_exam, update_exam_config, update_exam_topics
 from app.utils.security import get_current_user
 
 router = APIRouter(prefix="/exams", tags=["Exams"])
 
 
 @router.get("", response_model=list[ExamResponse])
-async def list_exams_endpoint(db: AsyncSession = Depends(get_db)):
-    return await list_exams(db)
+async def list_exams_endpoint(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+):
+    return await list_exams(db, skip=skip, limit=limit)
 
 
 @router.post("", response_model=ExamResponse, status_code=201)
@@ -49,3 +53,23 @@ async def delete_exam_endpoint(
     _=Depends(get_current_user),
 ):
     await delete_exam(exam_id, db)
+
+
+@router.put("/{exam_id}/config", response_model=ExamResponse)
+async def update_exam_config_endpoint(
+    exam_id: int,
+    data: ExamConfigUpdate,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await update_exam_config(exam_id, data, db)
+
+
+@router.put("/{exam_id}/topics", response_model=ExamResponse)
+async def update_exam_topics_endpoint(
+    exam_id: int,
+    data: ExamTopicsUpdate,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await update_exam_topics(exam_id, data, db)
