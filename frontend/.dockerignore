@@ -1,2 +1,8 @@
-node_modules/
-.git/
+node_modules
+dist
+.vite
+.git
+.DS_Store
+*.log
+.env.local
+tsconfig.tsbuildinfo

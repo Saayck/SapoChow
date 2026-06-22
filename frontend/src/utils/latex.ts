@@ -30,18 +30,24 @@ function escapeHtml(s: string): string {
 
 const MATH_RE = /\\\((.+?)\\\)|\\\[(.+?)\\\]|\$\$(.+?)\$\$|\$([^$\n]+?)\$/gs
 
+const LATEX_COMMAND_RE = /\\(?:[a-zA-Z]+|[(){}[\],;.!?\\\s])/
+
 /**
  * Render a string that may contain plain text mixed with LaTeX delimiters
  * (\(...\), \[...\], $...$, $$...$$). Text segments are HTML-escaped;
- * math segments are rendered with KaTeX.
+ * math segments are rendered with KaTeX. If the input lacks delimiters but
+ * looks like raw LaTeX (contains a backslash command), we render the whole
+ * thing as math as a best-effort fallback.
  */
 export function renderMixedLatex(input: string | null | undefined): string {
   if (!input) return ''
   let out = ''
   let lastIndex = 0
   let match: RegExpExecArray | null
+  let matched = false
   MATH_RE.lastIndex = 0
   while ((match = MATH_RE.exec(input)) !== null) {
+    matched = true
     if (match.index > lastIndex) {
       out += escapeHtml(input.slice(lastIndex, match.index))
     }
@@ -54,6 +60,9 @@ export function renderMixedLatex(input: string | null | undefined): string {
   }
   if (lastIndex < input.length) {
     out += escapeHtml(input.slice(lastIndex))
+  }
+  if (!matched && LATEX_COMMAND_RE.test(input)) {
+    return renderLatex(input.trim(), false)
   }
   return out
 }
