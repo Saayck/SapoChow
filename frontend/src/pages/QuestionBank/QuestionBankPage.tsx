@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Pencil, Trash2, Upload, ChevronDown, ChevronUp, HelpCircle, Search, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   useQuestions, useCreateQuestion, useUpdateQuestion,
-  useDeleteQuestion, useImportQuestions, useConfirmImport, useUploadQuestionImage,
+  useDeleteQuestion, useDeleteQuestions, useImportQuestions, useConfirmImport, useUploadQuestionImage,
 } from '../../hooks/useQuestions'
 import { useTopics } from '../../hooks/useTopics'
 import { questionService } from '../../services/questionService'
@@ -36,48 +36,63 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
-function QuestionCard({ question, topicName, onEdit, onDelete }: {
+function QuestionCard({ question, topicName, onEdit, onDelete, isSelected, onToggle }: {
   question: Question
   topicName?: string
   onEdit: () => void
   onDelete: () => void
+  isSelected?: boolean
+  onToggle?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const correct = question.alternatives.find((a) => a.is_correct)
 
   return (
-    <div className="bg-white border border-gray-200/80 rounded-2xl shadow-card overflow-hidden transition-all duration-200 hover:shadow-card-hover hover:border-gray-300">
+    <div className={clsx(
+      'bg-white border rounded-2xl shadow-card overflow-hidden transition-all duration-200 hover:shadow-card-hover',
+      isSelected ? 'border-primary-400 ring-2 ring-primary-200' : 'border-gray-200/80 hover:border-gray-300'
+    )}>
       <div className="px-5 py-4 flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          {topicName && (
-            <span className="inline-flex items-center text-xs font-medium text-primary-600 bg-primary-50/80 px-2 py-0.5 rounded-lg border border-primary-100 mb-2">
-              {topicName}
-            </span>
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          {onToggle && (
+            <input
+              type="checkbox"
+              checked={!!isSelected}
+              onChange={onToggle}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer shrink-0"
+            />
           )}
-          <div
-            className="text-sm text-gray-800 line-clamp-2 katex-inline"
-            dangerouslySetInnerHTML={{
-              __html: renderContent({
-                text: question.statement_text,
-                latex: question.statement_latex,
-              }),
-            }}
-          />
-          {correct && (
-            <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Correcta:{' '}
-              <strong
-                className="katex-inline"
-                dangerouslySetInnerHTML={{
-                  __html: renderContent({
-                    text: correct.content_text,
-                    latex: correct.content_latex,
-                  }),
-                }}
-              />
-            </p>
-          )}
+          <div className="flex-1 min-w-0">
+            {topicName && (
+              <span className="inline-flex items-center text-xs font-medium text-primary-600 bg-primary-50/80 px-2 py-0.5 rounded-lg border border-primary-100 mb-2">
+                {topicName}
+              </span>
+            )}
+            <div
+              className="text-sm text-gray-800 line-clamp-2 katex-inline"
+              dangerouslySetInnerHTML={{
+                __html: renderContent({
+                  text: question.statement_text,
+                  latex: question.statement_latex,
+                }),
+              }}
+            />
+            {correct && (
+              <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Correcta:{' '}
+                <strong
+                  className="katex-inline"
+                  dangerouslySetInnerHTML={{
+                    __html: renderContent({
+                      text: correct.content_text,
+                      latex: correct.content_latex,
+                    }),
+                  }}
+                />
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button
@@ -332,6 +347,7 @@ export function QuestionBankPage() {
   const createMutation = useCreateQuestion()
   const updateMutation = useUpdateQuestion()
   const deleteMutation = useDeleteQuestion()
+  const deleteManyMutation = useDeleteQuestions()
   const importMutation = useImportQuestions()
   const confirmImportMutation = useConfirmImport()
   const uploadImageMutation = useUploadQuestionImage()
@@ -339,7 +355,9 @@ export function QuestionBankPage() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Question | null>(null)
   const [deleting, setDeleting] = useState<Question | null>(null)
+  const [deletingIds, setDeletingIds] = useState<number[] | null>(null)
   const [importPreview, setImportPreview] = useState<QuestionImportPreview | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
 
   const [alternatives, setAlternatives] = useState<AlternativeCreate[]>(emptyAlts())
   const [altImageFiles, setAltImageFiles] = useState<(File | null)[]>(EMPTY_ALT_IMAGES())
@@ -352,6 +370,57 @@ export function QuestionBankPage() {
   const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
+
+  const topicMap = useMemo(() => {
+    if (!topics) return {}
+    const map: Record<number, string> = {}
+    for (const t of topics) map[t.id] = t.name
+    return map
+  }, [topics])
+
+  const grouped = useMemo(() => {
+    if (!questions) return []
+    const groups: { topicId: number; topicName: string; questions: Question[] }[] = []
+    const map: Record<number, Question[]> = {}
+    for (const q of questions) {
+      if (!map[q.topic_id]) map[q.topic_id] = []
+      map[q.topic_id].push(q)
+    }
+    for (const topicId of Object.keys(map).map(Number)) {
+      groups.push({
+        topicId,
+        topicName: topicMap[topicId] ?? `Tema #${topicId}`,
+        questions: map[topicId],
+      })
+    }
+    groups.sort((a, b) => a.topicName.localeCompare(b.topicName))
+    return groups
+  }, [questions, topicMap])
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleGroup = (topicId: number) => {
+    const group = grouped.find((g) => g.topicId === topicId)
+    if (!group) return
+    const allSelected = group.questions.every((q) => selectedIds.has(q.id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      for (const q of group.questions) {
+        if (allSelected) next.delete(q.id)
+        else next.add(q.id)
+      }
+      return next
+    })
+  }
+
+  const clearSelection = () => setSelectedIds(new Set())
 
   const openCreate = () => {
     reset({ topic_id: 0, statement_text: '' })
@@ -453,6 +522,17 @@ export function QuestionBankPage() {
     }
   }
 
+  const handleBulkDelete = async () => {
+    if (!deletingIds || deletingIds.length === 0) return
+    try {
+      await deleteManyMutation.mutateAsync(deletingIds)
+      setDeletingIds(null)
+      clearSelection()
+    } catch (err) {
+      alert(getErrorMessage(err))
+    }
+  }
+
   const topicOptions = [
     { value: '', label: 'Todos los temas' },
     ...(topics?.map((t) => ({ value: String(t.id), label: t.name })) ?? []),
@@ -467,6 +547,7 @@ export function QuestionBankPage() {
   if (error) return <ErrorMessage message="No se pudieron cargar las preguntas" onRetry={refetch} />
 
   const isSaving = createMutation.isPending || updateMutation.isPending || uploadImageMutation.isPending
+  const selectedCount = selectedIds.size
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -518,7 +599,27 @@ export function QuestionBankPage() {
         </div>
       </div>
 
-      {questions?.length === 0 ? (
+      {selectedCount > 0 && (
+        <div className="sticky top-4 z-10 flex items-center justify-between bg-primary-50 border border-primary-200 rounded-2xl px-5 py-3 shadow-lg">
+          <p className="text-sm font-medium text-primary-800">
+            {selectedCount} pregunta{selectedCount !== 1 ? 's' : ''} seleccionada{selectedCount !== 1 ? 's' : ''}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={clearSelection}>
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => setDeletingIds([...selectedIds])}
+            >
+              <Trash2 size={13} /> Eliminar seleccionadas
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {grouped.length === 0 ? (
         <Card>
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
@@ -531,16 +632,43 @@ export function QuestionBankPage() {
           </div>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {questions?.map((q) => (
-            <QuestionCard
-              key={q.id}
-              question={q}
-              topicName={topics?.find((t) => t.id === q.topic_id)?.name}
-              onEdit={() => openEdit(q)}
-              onDelete={() => setDeleting(q)}
-            />
-          ))}
+        <div className="space-y-8">
+          {grouped.map((group) => {
+            const allSelected = group.questions.every((q) => selectedIds.has(q.id))
+            const someSelected = group.questions.some((q) => selectedIds.has(q.id))
+            return (
+              <section key={group.topicId}>
+                <div className="flex items-center gap-3 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = someSelected && !allSelected
+                    }}
+                    onChange={() => toggleGroup(group.topicId)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                  />
+                  <h2 className="text-lg font-semibold text-gray-800">{group.topicName}</h2>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                    {group.questions.length} pregunta{group.questions.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {group.questions.map((q) => (
+                    <QuestionCard
+                      key={q.id}
+                      question={q}
+                      topicName={undefined}
+                      isSelected={selectedIds.has(q.id)}
+                      onToggle={() => toggleSelect(q.id)}
+                      onEdit={() => openEdit(q)}
+                      onDelete={() => setDeleting(q)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          })}
         </div>
       )}
 
@@ -626,6 +754,22 @@ export function QuestionBankPage() {
             }}
           >
             Eliminar
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal open={deletingIds !== null} onClose={() => setDeletingIds(null)} title="Eliminar preguntas" size="sm">
+        <p className="text-sm text-gray-500 mb-4">
+          ¿Seguro que deseas eliminar {deletingIds?.length ?? 0} pregunta{(deletingIds?.length ?? 0) !== 1 ? 's' : ''}? La acción no se puede deshacer.
+        </p>
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setDeletingIds(null)}>Cancelar</Button>
+          <Button
+            variant="danger"
+            loading={deleteManyMutation.isPending}
+            onClick={handleBulkDelete}
+          >
+            Eliminar {deletingIds?.length ?? 0} pregunta{(deletingIds?.length ?? 0) !== 1 ? 's' : ''}
           </Button>
         </div>
       </Modal>

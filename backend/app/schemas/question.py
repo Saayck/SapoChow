@@ -74,3 +74,7 @@ class QuestionImportPreview(BaseModel):
 class QuestionImportConfirm(BaseModel):
     topic_id: int
     questions: list[ImportedQuestionPreview]
+
+
+class QuestionBulkDelete(BaseModel):
+    ids: list[int]
