@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button'
 import { LoadingState } from '../../components/ui/LoadingState'
 import { ErrorMessage } from '../../components/ui/ErrorMessage'
 import { getErrorMessage } from '../../services/api'
-import { renderLatex } from '../../utils/latex'
+import { renderContent } from '../../utils/latex'
 import { clsx } from 'clsx'
 
 export function ExamPreviewPage() {
@@ -122,15 +122,16 @@ export function ExamPreviewPage() {
                 {q.number}
               </span>
               <div className="flex-1 pt-0.5">
-                {q.statement_text && (
-                  <p className="text-sm text-gray-800">{q.statement_text}</p>
-                )}
-                {q.statement_latex && (
-                  <div
-                    className="text-sm mt-1"
-                    dangerouslySetInnerHTML={{ __html: renderLatex(q.statement_latex, true) }}
-                  />
-                )}
+                <div
+                  className="text-sm text-gray-800 leading-relaxed katex-inline"
+                  dangerouslySetInnerHTML={{
+                    __html: renderContent({
+                      text: q.statement_text,
+                      latex: q.statement_latex,
+                      displayLatex: true,
+                    }),
+                  }}
+                />
                 {q.image_path && (
                   <img src={q.image_path} alt={`Pregunta ${q.number}`} className="mt-3 max-h-48 rounded-xl border border-gray-100" />
                 )}
@@ -153,12 +154,15 @@ export function ExamPreviewPage() {
                     {alt.letter}
                   </span>
                   <div className="flex-1 pt-0.5">
-                    {alt.content_text && <span className="text-gray-700">{alt.content_text}</span>}
-                    {alt.content_latex && (
-                      <div
-                        dangerouslySetInnerHTML={{ __html: renderLatex(alt.content_latex, false) }}
-                      />
-                    )}
+                    <div
+                      className="text-gray-700 katex-inline"
+                      dangerouslySetInnerHTML={{
+                        __html: renderContent({
+                          text: alt.content_text,
+                          latex: alt.content_latex,
+                        }),
+                      }}
+                    />
                     {alt.image_path && (
                       <img src={alt.image_path} alt={`Alt ${alt.letter}`} className="mt-1 max-h-20 rounded-xl border border-gray-100" />
                     )}

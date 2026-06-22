@@ -10,6 +10,7 @@ Flow:
 6. Update ExamVersion.pdf_path.
 7. Return the PDF path for streaming.
 """
+import re
 import subprocess
 import tempfile
 import shutil
@@ -63,10 +64,15 @@ async def _load_version(version_id: int, db: AsyncSession) -> ExamVersion:
     return version
 
 
-def _escape_latex(text: str | None) -> str:
-    if not text:
-        return ""
+_MATH_SEGMENT_RE = re.compile(
+    r"\\\(.+?\\\)|\\\[.+?\\\]|\$\$.+?\$\$|\$[^$\n]+?\$",
+    re.DOTALL,
+)
+
+
+def _escape_plain(text: str) -> str:
     replacements = [
+        ("\\", r"\textbackslash{}"),
         ("&", r"\&"),
         ("%", r"\%"),
         ("$", r"\$"),
@@ -76,11 +82,31 @@ def _escape_latex(text: str | None) -> str:
         ("}", r"\}"),
         ("~", r"\textasciitilde{}"),
         ("^", r"\textasciicircum{}"),
-        ("\\", r"\textbackslash{}"),
     ]
     for char, replacement in replacements:
         text = text.replace(char, replacement)
     return text
+
+
+def _escape_latex(text: str | None) -> str:
+    """Escape *text* for LaTeX, preserving any embedded math delimiters.
+
+    Segments delimited by \\(...\\), \\[...\\], $...$ or $$...$$ are kept
+    verbatim so Tectonic renders them as math. Everything else is escaped.
+    """
+    if not text:
+        return ""
+
+    out: list[str] = []
+    last = 0
+    for m in _MATH_SEGMENT_RE.finditer(text):
+        if m.start() > last:
+            out.append(_escape_plain(text[last:m.start()]))
+        out.append(m.group(0))
+        last = m.end()
+    if last < len(text):
+        out.append(_escape_plain(text[last:]))
+    return "".join(out)
 
 
 async def generate_pdf(version_id: int, db: AsyncSession) -> Path:

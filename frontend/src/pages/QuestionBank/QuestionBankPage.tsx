@@ -21,7 +21,7 @@ import { AlternativeManager } from '../../components/AlternativeManager/Alternat
 import { LatexEditor } from '../../components/LatexEditor/LatexEditor'
 import { ImageUploader } from '../../components/ImageUploader/ImageUploader'
 import { getErrorMessage } from '../../services/api'
-import { renderLatex } from '../../utils/latex'
+import { renderContent } from '../../utils/latex'
 import { clsx } from 'clsx'
 
 const EMPTY_ALT_IMAGES = (): (File | null)[] => Array(5).fill(null)
@@ -54,19 +54,28 @@ function QuestionCard({ question, topicName, onEdit, onDelete }: {
               {topicName}
             </span>
           )}
-          {question.statement_text && (
-            <p className="text-sm text-gray-800 line-clamp-2">{question.statement_text}</p>
-          )}
-          {question.statement_latex && !question.statement_text && (
-            <div
-              className="text-sm"
-              dangerouslySetInnerHTML={{ __html: renderLatex(question.statement_latex, false) }}
-            />
-          )}
+          <div
+            className="text-sm text-gray-800 line-clamp-2 katex-inline"
+            dangerouslySetInnerHTML={{
+              __html: renderContent({
+                text: question.statement_text,
+                latex: question.statement_latex,
+              }),
+            }}
+          />
           {correct && (
             <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Correcta: <strong>{correct.content_text || correct.content_latex}</strong>
+              Correcta:{' '}
+              <strong
+                className="katex-inline"
+                dangerouslySetInnerHTML={{
+                  __html: renderContent({
+                    text: correct.content_text,
+                    latex: correct.content_latex,
+                  }),
+                }}
+              />
             </p>
           )}
         </div>
@@ -103,7 +112,15 @@ function QuestionCard({ question, topicName, onEdit, onDelete }: {
                 {String.fromCharCode(65 + i)}
               </span>
               <div className="flex-1">
-                <span>{alt.content_text || alt.content_latex}</span>
+                <span
+                  className="katex-inline"
+                  dangerouslySetInnerHTML={{
+                    __html: renderContent({
+                      text: alt.content_text,
+                      latex: alt.content_latex,
+                    }),
+                  }}
+                />
                 {alt.image_path && (
                   <img src={alt.image_path} alt={`alt-${i}`} className="mt-1 max-h-16 rounded-xl" />
                 )}
@@ -155,7 +172,7 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
 
   return (
     <Modal open onClose={onClose} title={`Importar preguntas — ${preview.file_name}`} size="xl">
-      <div className="space-y-4">
+      <div className="space-y-5">
         {preview.warnings.length > 0 && (
           <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
             <AlertTriangle size={15} className="shrink-0 mt-0.5" />
@@ -165,77 +182,121 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Asignar a tema <span className="text-red-500">*</span>
-          </label>
-          <Select
-            options={topicOptions}
-            value={String(topicId)}
-            onChange={(e) => { setTopicId(Number(e.target.value)); setSubmitError(null) }}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] items-end gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Asignar a tema <span className="text-red-500">*</span>
+            </label>
+            <Select
+              options={topicOptions}
+              value={String(topicId)}
+              onChange={(e) => { setTopicId(Number(e.target.value)); setSubmitError(null) }}
+            />
+          </div>
+          <p className="text-xs text-gray-400">
+            {preview.detected_questions.length} pregunta{preview.detected_questions.length !== 1 ? 's' : ''} detectada{preview.detected_questions.length !== 1 ? 's' : ''}
+          </p>
         </div>
 
-        <p className="text-sm text-gray-400">
-          {preview.detected_questions.length} pregunta{preview.detected_questions.length !== 1 ? 's' : ''} detectada{preview.detected_questions.length !== 1 ? 's' : ''}.
-          Selecciona las que deseas guardar.
-        </p>
+        <div className="rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white px-1 py-1 max-h-[55vh] overflow-y-auto scrollbar-thin">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm m-3 p-6 sm:p-8 font-serif text-gray-900 print:shadow-none">
+            <div className="text-center border-b border-gray-200 pb-4 mb-6">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-gray-400 mb-2">
+                Vista previa — Exportación profesional
+              </p>
+              <h3 className="text-lg font-semibold tracking-tight">
+                {preview.file_name.replace(/\.[^.]+$/, '')}
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Renderizado con LaTeX · {preview.detected_questions.length} pregunta{preview.detected_questions.length !== 1 ? 's' : ''}
+              </p>
+            </div>
 
-        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-thin">
-          {preview.detected_questions.map((q, i) => {
-            const hasWarnings = q.warnings.length > 0
-            return (
-              <div
-                key={i}
-                className={clsx(
-                  'rounded-xl border px-4 py-3 cursor-pointer transition-all',
-                  selected[i]
-                    ? 'border-primary-300 bg-primary-50/40'
-                    : 'border-gray-200 bg-gray-50/50 opacity-60 hover:opacity-80'
-                )}
-                onClick={() => toggle(i)}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selected[i]}
-                    onChange={() => toggle(i)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 mb-2">
-                      {i + 1}. {q.statement_text || q.statement_latex || '(sin enunciado)'}
-                    </p>
-                    <div className="space-y-1">
-                      {q.alternatives.map((alt, ai) => (
-                        <div key={ai} className={clsx('flex items-center gap-2 text-xs', alt.is_correct && 'text-emerald-700 font-medium')}>
-                          <span className={clsx(
-                            'w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
-                            alt.is_correct ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'
-                          )}>
-                            {String.fromCharCode(65 + ai)}
-                          </span>
-                          <span>{alt.content_text || alt.content_latex}</span>
-                          {alt.is_correct && <CheckCircle2 size={11} className="text-emerald-500" />}
+            <ol className="space-y-5 list-none">
+              {preview.detected_questions.map((q, i) => {
+                const hasWarnings = q.warnings.length > 0
+                const isSelected = selected[i]
+                return (
+                  <li key={i} className="group">
+                    <div
+                      className={clsx(
+                        'rounded-xl px-4 py-4 transition-all border',
+                        isSelected
+                          ? 'border-primary-200 bg-primary-50/30'
+                          : 'border-transparent bg-gray-50/40 opacity-60'
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggle(i)}
+                          className="mt-1.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-bold text-gray-900 shrink-0">{i + 1}.</span>
+                            <div
+                              className="text-[15px] leading-relaxed katex-inline"
+                              dangerouslySetInnerHTML={{
+                                __html:
+                                  renderContent({
+                                    text: q.statement_text,
+                                    latex: q.statement_latex,
+                                  }) || '<span class="text-gray-400 italic text-sm">(sin enunciado)</span>',
+                              }}
+                            />
+                          </div>
+
+                          <ol className="mt-3 ml-6 space-y-1.5 list-none">
+                            {q.alternatives.map((alt, ai) => (
+                              <li
+                                key={ai}
+                                className={clsx(
+                                  'flex items-baseline gap-3 text-[14px] leading-relaxed',
+                                  alt.is_correct && 'text-emerald-700'
+                                )}
+                              >
+                                <span className={clsx(
+                                  'font-bold w-5 shrink-0',
+                                  alt.is_correct ? 'text-emerald-600' : 'text-gray-700'
+                                )}>
+                                  {String.fromCharCode(65 + ai)}.
+                                </span>
+                                <div
+                                  className="katex-inline flex-1"
+                                  dangerouslySetInnerHTML={{
+                                    __html: renderContent({
+                                      text: alt.content_text,
+                                      latex: alt.content_latex,
+                                    }),
+                                  }}
+                                />
+                                {alt.is_correct && (
+                                  <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                                )}
+                              </li>
+                            ))}
+                          </ol>
+
+                          {hasWarnings && (
+                            <div className="mt-3 space-y-0.5 font-sans">
+                              {q.warnings.map((w, wi) => (
+                                <p key={wi} className="text-xs text-amber-600 flex items-center gap-1">
+                                  <AlertTriangle size={10} />
+                                  {w}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                    {hasWarnings && (
-                      <div className="mt-2 space-y-0.5">
-                        {q.warnings.map((w, wi) => (
-                          <p key={wi} className="text-xs text-amber-600 flex items-center gap-1">
-                            <AlertTriangle size={10} />
-                            {w}
-                          </p>
-                        ))}
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+                    </div>
+                  </li>
+                )
+              })}
+            </ol>
+          </div>
         </div>
 
         {submitError && (

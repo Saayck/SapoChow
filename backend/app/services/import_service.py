@@ -1,10 +1,14 @@
-"""
+r"""
 Import service for Word (.docx) and PDF files.
 
 Detection heuristic:
 - Paragraphs starting with a number followed by . or ) are treated as question stems.
 - Lines starting with A) B) C) D) E) (or a) b)…) are treated as alternatives.
 - The first alternative that contains a marker like *, (correct), or [correct] is flagged correct.
+- LaTeX math delimiters \(...\), \[...\], $...$ and $$...$$ are detected. When the
+  content is *entirely* one math expression, it is stored in the *_latex field
+  (without delimiters). Otherwise the raw text — including delimiters — is kept
+  in the *_text field and the frontend renders the math inline with KaTeX.
 """
 import re
 from pathlib import Path
@@ -16,11 +20,38 @@ QUESTION_RE = re.compile(r"^\s*(\d+)[\.\)]\s+(.+)$", re.DOTALL)
 ALT_RE = re.compile(r"^\s*([a-eA-E])[\.\)]\s+(.+)$", re.DOTALL)
 CORRECT_MARKERS = re.compile(r"\*|\(correct\)|\[correct\]|✓", re.IGNORECASE)
 
+# Matches a single LaTeX math expression that occupies the entire string
+PURE_LATEX_RE = re.compile(
+    r"^\s*(?:"
+    r"\\\((?P<inline>.+?)\\\)"        # \( ... \)
+    r"|\\\[(?P<display>.+?)\\\]"       # \[ ... \]
+    r"|\$\$(?P<displaydollar>.+?)\$\$" # $$ ... $$
+    r"|\$(?P<inlinedollar>.+?)\$"      # $ ... $
+    r")\s*$",
+    re.DOTALL,
+)
+
+
+def _split_text_and_latex(content: str) -> tuple[str | None, str | None]:
+    """Return (text, latex) for a content string.
+
+    If the content is a single LaTeX expression, returns (None, latex_body).
+    Otherwise returns (content, None) preserving any inline delimiters so the
+    frontend can render the math via KaTeX.
+    """
+    if not content:
+        return None, None
+    stripped = content.strip()
+    m = PURE_LATEX_RE.match(stripped)
+    if m:
+        body = m.group("inline") or m.group("display") or m.group("displaydollar") or m.group("inlinedollar")
+        return None, body.strip()
+    return stripped, None
+
 
 def _parse_lines(lines: list[str]) -> list[ImportedQuestionPreview]:
     questions: list[ImportedQuestionPreview] = []
     current_q: ImportedQuestionPreview | None = None
-    warnings: list[str] = []
 
     for raw_line in lines:
         line = raw_line.strip()
@@ -33,24 +64,39 @@ def _parse_lines(lines: list[str]) -> list[ImportedQuestionPreview]:
         if q_match:
             if current_q:
                 questions.append(current_q)
-            current_q = ImportedQuestionPreview(statement_text=q_match.group(2).strip())
+            stmt = q_match.group(2).strip()
+            text, latex = _split_text_and_latex(stmt)
+            current_q = ImportedQuestionPreview(
+                statement_text=text,
+                statement_latex=latex,
+            )
         elif alt_match and current_q is not None:
             content = alt_match.group(2).strip()
             is_correct = bool(CORRECT_MARKERS.search(content))
             clean_content = CORRECT_MARKERS.sub("", content).strip()
+            text, latex = _split_text_and_latex(clean_content)
             current_q.alternatives.append(
-                ImportedAlternativePreview(content_text=clean_content, is_correct=is_correct)
+                ImportedAlternativePreview(
+                    content_text=text,
+                    content_latex=latex,
+                    is_correct=is_correct,
+                )
             )
         else:
-            # Continuation of current question statement
+            # Continuation of current question statement (no alternatives yet)
             if current_q and not current_q.alternatives:
-                current_q.statement_text = (current_q.statement_text or "") + " " + line
+                existing = current_q.statement_text or (
+                    f"\\({current_q.statement_latex}\\)" if current_q.statement_latex else ""
+                )
+                merged = (existing + " " + line).strip()
+                text, latex = _split_text_and_latex(merged)
+                current_q.statement_text = text
+                current_q.statement_latex = latex
 
     if current_q:
         questions.append(current_q)
 
-    # Post-process warnings per question
-    for i, q in enumerate(questions, start=1):
+    for q in questions:
         if len(q.alternatives) != 5:
             q.warnings.append(
                 f"Expected 5 alternatives, found {len(q.alternatives)}"
@@ -78,7 +124,6 @@ def _import_docx(path: Path) -> list[ImportedQuestionPreview]:
         if text:
             lines.append(text)
 
-    # Also read tables
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
