@@ -6,7 +6,8 @@ import { useAuthStore } from '../../store/authStore'
 import { useLogin } from '../../hooks/useAuth'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
-import { FileText } from 'lucide-react'
+
+const logo = '/logo.png'
 
 const schema = z.object({
   email: z.string().email('Ingresa un correo válido'),
@@ -33,9 +34,7 @@ export function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm animate-fade-in-up">
           <div className="mb-10">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20 mb-5">
-              <FileText size={18} className="text-white" />
-            </div>
+            <img src={logo} alt="Logo" className="h-10 mb-5 object-contain" />
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Accede a tu cuenta</h1>
             <p className="text-gray-400 text-sm mt-1.5">Ingresa tus credenciales para continuar</p>
           </div>
@@ -84,9 +83,7 @@ export function LoginPage() {
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         <div className="relative z-10 text-center max-w-md">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-6 border border-white/10">
-            <FileText size={28} className="text-white" />
-          </div>
+          <img src={logo} alt="Logo" className="h-16 mx-auto mb-6 object-contain brightness-0 invert" />
           <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">ExamForge</h2>
           <p className="text-primary-200/80 text-sm leading-relaxed">
             Plataforma inteligente para crear, gestionar y generar versiones aleatorias de exámenes académicos con soporte para LaTeX y exportación PDF.
