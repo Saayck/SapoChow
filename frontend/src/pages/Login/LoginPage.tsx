@@ -83,7 +83,7 @@ export function LoginPage() {
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         <div className="relative z-10 text-center max-w-md">
-          <img src={logo} alt="Logo" className="h-16 mx-auto mb-6 object-contain brightness-0 invert" />
+          <img src={logo} alt="Logo" className="h-16 mx-auto mb-6 object-contain" />
           <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">ExamForge</h2>
           <p className="text-primary-200/80 text-sm leading-relaxed">
             Plataforma inteligente para crear, gestionar y generar versiones aleatorias de exámenes académicos con soporte para LaTeX y exportación PDF.
