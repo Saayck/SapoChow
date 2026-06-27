@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Upload, ChevronDown, ChevronUp, HelpCircle, Search, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload, ChevronDown, ChevronUp, HelpCircle, Search, AlertTriangle } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -252,15 +252,9 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
                             {q.alternatives.map((alt, ai) => (
                               <li
                                 key={ai}
-                                className={clsx(
-                                  'flex items-baseline gap-3 text-[14px] leading-relaxed',
-                                  alt.is_correct && 'text-emerald-700'
-                                )}
+                                className="flex items-baseline gap-3 text-[14px] leading-relaxed"
                               >
-                                <span className={clsx(
-                                  'font-bold w-5 shrink-0',
-                                  alt.is_correct ? 'text-emerald-600' : 'text-gray-700'
-                                )}>
+                                <span className="font-bold w-5 shrink-0 text-gray-700">
                                   {String.fromCharCode(65 + ai)}.
                                 </span>
                                 <div
@@ -272,9 +266,6 @@ function ImportPreviewModal({ preview, topics, onClose, onConfirm, saving }: {
                                     }),
                                   }}
                                 />
-                                {alt.is_correct && (
-                                  <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                                )}
                               </li>
                             ))}
                           </ol>
