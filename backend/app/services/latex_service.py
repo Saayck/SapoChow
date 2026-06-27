@@ -88,6 +88,17 @@ def _escape_plain(text: str) -> str:
     return text
 
 
+def _resolve_image_path(image_path: str | None) -> str | None:
+    """Convert a DB-relative image path to an absolute path for LaTeX/Tectonic."""
+    if not image_path:
+        return None
+    base_dir = Path(settings.UPLOAD_DIR).parent.resolve()
+    abs_path = (base_dir / image_path).resolve()
+    if not abs_path.exists():
+        return None
+    return str(abs_path).replace("\\", "/")
+
+
 def _escape_latex(text: str | None) -> str:
     """Escape *text* for LaTeX, preserving any embedded math delimiters.
 
@@ -149,7 +160,7 @@ async def generate_pdf(version_id: int, db: AsyncSession) -> Path:
                 "letter": va.letter,
                 "content_text": _escape_latex(alt.content_text) if not alt.content_latex else None,
                 "content_latex": alt.content_latex,
-                "image_path": alt.image_path,
+                "image_path": _resolve_image_path(alt.image_path),
                 "is_correct": va.is_correct_snapshot,
             })
             if va.is_correct_snapshot:
@@ -160,7 +171,7 @@ async def generate_pdf(version_id: int, db: AsyncSession) -> Path:
             "number": vq.order_number,
             "statement_text": _escape_latex(q.statement_text) if not q.statement_latex else None,
             "statement_latex": q.statement_latex,
-            "image_path": q.image_path,
+            "image_path": _resolve_image_path(q.image_path),
             "alternatives": alts_data,
         })
         answer_key.append({"number": vq.order_number, "letter": correct_letter})

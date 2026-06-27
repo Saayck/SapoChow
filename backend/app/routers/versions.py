@@ -155,10 +155,7 @@ async def download_version_pdf(version_id: int, db: AsyncSession = Depends(get_d
     if not version:
         raise NotFoundError("ExamVersion", version_id)
 
-    if version.pdf_path and Path(version.pdf_path).exists():
-        pdf_path = Path(version.pdf_path)
-    else:
-        pdf_path = await generate_pdf(version_id, db)
+    pdf_path = await generate_pdf(version_id, db)
 
     return FileResponse(
         path=str(pdf_path),
