@@ -26,6 +26,10 @@ export const questionService = {
     await api.delete(`/questions/${id}`)
   },
 
+  removeMany: async (ids: number[]): Promise<void> => {
+    await api.request({ method: 'delete', url: '/questions/bulk', data: { ids } })
+  },
+
   importFile: async (file: File): Promise<QuestionImportPreview> => {
     const form = new FormData()
     form.append('file', file)

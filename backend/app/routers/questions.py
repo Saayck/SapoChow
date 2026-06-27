@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models.question import Question
 from app.models.alternative import Alternative
 from app.models.topic import Topic
-from app.schemas.question import QuestionCreate, QuestionUpdate, QuestionResponse, QuestionImportPreview, QuestionImportConfirm
+from app.schemas.question import QuestionCreate, QuestionUpdate, QuestionResponse, QuestionImportPreview, QuestionImportConfirm, QuestionBulkDelete
 from app.services.file_service import save_upload_file
 from app.services.import_service import import_questions_from_file
 from app.utils.exceptions import NotFoundError, ValidationError
@@ -132,6 +132,24 @@ async def update_question(
         select(Question).where(Question.id == question_id).options(selectinload(Question.alternatives))
     )
     return result.scalar_one()
+
+
+@router.delete("/bulk", status_code=204)
+async def delete_questions_bulk(
+    data: QuestionBulkDelete,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    if not data.ids:
+        raise ValidationError("No question IDs provided")
+    result = await db.execute(
+        select(Question).where(Question.id.in_(data.ids))
+    )
+    questions = result.scalars().all()
+    if not questions:
+        raise NotFoundError("Questions", 0)
+    for q in questions:
+        await db.delete(q)
 
 
 @router.delete("/{question_id}", status_code=204)

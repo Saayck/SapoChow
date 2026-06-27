@@ -36,6 +36,14 @@ export function useDeleteQuestion() {
   })
 }
 
+export function useDeleteQuestions() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: number[]) => questionService.removeMany(ids),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUESTIONS_KEY }),
+  })
+}
+
 export function useImportQuestions() {
   return useMutation({
     mutationFn: (file: File) => questionService.importFile(file),

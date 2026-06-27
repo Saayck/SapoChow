@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, BookOpen, HelpCircle, FileText, Library, ChevronRight, X } from 'lucide-react'
 import { clsx } from 'clsx'
 
+const logo = '/logo.png'
+
 const nav = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/exams', icon: Library, label: 'Exámenes' },
@@ -33,15 +35,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       open ? 'translate-x-0' : '-translate-x-full'
     )}>
       <div className="flex items-center justify-between px-5 py-6 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20">
-            <FileText size={16} className="text-white" />
-          </div>
-          <div>
-            <span className="text-base font-bold tracking-tight">ExamForge</span>
-            <p className="text-[10px] text-white/30 font-medium uppercase tracking-widest hidden sm:block">Plataforma de exámenes</p>
-          </div>
-        </div>
+        <img src={logo} alt="Logo" className="w-full max-h-16 object-contain" />
         <button
           onClick={onClose}
           className="lg:hidden rounded-lg p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-all"
