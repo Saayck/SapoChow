@@ -73,7 +73,7 @@
 ((*- for q in questions *))
 \item
 ((*- if q.statement_latex *))
-  \(((( q.statement_latex )))\)
+  \( ((( q.statement_latex ))) \)
 ((*- elif q.statement_text *))
   ((( q.statement_text )))
 ((*- endif *))
@@ -103,7 +103,7 @@
 \begin{enumerate}
 ((*- for alt in q.alternatives *))
 \item[((( alt.letter ))))]
-((*- if alt.content_latex *))\(((( alt.content_latex )))\)((*- elif alt.content_text *))\mbox{}((( alt.content_text )))((*- endif *))
+((*- if alt.content_latex *))\( ((( alt.content_latex ))) \)((*- elif alt.content_text *))\mbox{}((( alt.content_text )))((*- endif *))
 ((*- if alt.image_path *))\begin{center}\includegraphics[width=0.75\columnwidth,keepaspectratio]{((( alt.image_path )))}\end{center}((*- endif *))
 ((*- endfor *))
 \end{enumerate}
