@@ -218,8 +218,10 @@ async def generate_pdf(version_id: int, db: AsyncSession) -> Path:
             raise ServiceError("PDF compilation timed out")
 
         if result.returncode != 0:
-            stderr_excerpt = result.stderr[-500:] if result.stderr else "(no stderr)"
-            raise ServiceError(f"Tectonic compilation failed: {stderr_excerpt}")
+            stderr_part = result.stderr.strip()[-400:] if result.stderr and result.stderr.strip() else None
+            stdout_part = result.stdout.strip()[-400:] if result.stdout and result.stdout.strip() else None
+            detail = stderr_part or stdout_part or "(no output)"
+            raise ServiceError(f"Tectonic compilation failed: {detail}")
 
         pdf_src = Path(tmpdir) / f"exam_version_{version_id}.pdf"
         if not pdf_src.exists():

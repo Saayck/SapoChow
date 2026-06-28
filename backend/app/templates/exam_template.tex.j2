@@ -9,8 +9,6 @@
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{multicol}
-\usepackage{tikz}
-\usepackage{xcolor}
 \usepackage{microtype}
 
 \setlength{\parskip}{0pt}
@@ -53,11 +51,8 @@
   {\LARGE\bfseries MODALIDAD}\\[6pt]
   {\LARGE\bfseries ((( modality )))}\\[3cm]
   {\LARGE\bfseries TEMA:\enspace
-    \tikz[baseline=(char.base)]{
-      \node[draw, circle, inner sep=10pt, line width=2.5pt,
-            font=\huge\bfseries]{((( version_code )))};
-    }%
-  }\\[2cm]
+    \setlength{\fboxrule}{2.5pt}\setlength{\fboxsep}{10pt}%
+    \fbox{\huge\bfseries ((( version_code )))}}\\[2cm]
   \vfill
   {\small\bfseries Docente: ((( teacher_name ))) \quad|\quad Fecha: ((( exam_date )))}
 \end{center}
