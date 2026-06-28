@@ -182,6 +182,8 @@ async def generate_pdf(version_id: int, db: AsyncSession) -> Path:
         "title": _escape_latex(exam.title),
         "teacher_name": _escape_latex(exam.teacher_name),
         "exam_date": str(exam.exam_date),
+        "exam_year": str(exam.exam_date.year),
+        "modality": _escape_latex((exam.modality or "ORDINARIO").upper()),
         "version_code": version.version_code,
         "instructions": _escape_latex(exam.instructions or ""),
         "questions": questions_data,

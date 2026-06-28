@@ -20,6 +20,7 @@ export interface Exam {
   institution_name: string
   teacher_name: string
   exam_date: string
+  modality: string | null
   instructions: string | null
   created_at: string
   config: ExamConfig | null
@@ -43,6 +44,7 @@ export interface ExamCreate {
   institution_name: string
   teacher_name: string
   exam_date: string
+  modality?: string
   instructions?: string
   config: ExamConfigCreate
   topics: ExamTopicCreate[]
@@ -53,5 +55,6 @@ export interface ExamUpdate {
   institution_name?: string
   teacher_name?: string
   exam_date?: string
+  modality?: string
   instructions?: string
 }

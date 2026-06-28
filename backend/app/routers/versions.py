@@ -112,6 +112,7 @@ async def _build_preview(version_id: int, db: AsyncSession) -> VersionPreviewRes
             "institution_name": exam.institution_name,
             "teacher_name": exam.teacher_name,
             "exam_date": str(exam.exam_date),
+            "modality": exam.modality or "ORDINARIO",
             "instructions": exam.instructions,
         },
         questions=questions_out,

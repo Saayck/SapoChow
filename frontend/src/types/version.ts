@@ -31,6 +31,7 @@ export interface VersionPreview {
     institution_name: string
     teacher_name: string
     exam_date: string
+    modality?: string | null
     instructions?: string | null
   }
   questions: VersionPreviewQuestion[]

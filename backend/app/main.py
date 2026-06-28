@@ -10,12 +10,25 @@ from app.database import create_tables
 from app.routers import auth, topics, questions, alternatives, exams, versions
 
 
+async def _run_migrations():
+    """Add new columns to existing SQLite databases without breaking data."""
+    from app.database import engine
+    async with engine.begin() as conn:
+        try:
+            await conn.execute(__import__("sqlalchemy").text(
+                "ALTER TABLE exams ADD COLUMN modality VARCHAR(255)"
+            ))
+        except Exception:
+            pass  # Column already exists
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
     Path(settings.PDF_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
     await create_tables()
+    await _run_migrations()
     logger.info("ExamForge backend started")
     yield
     # Shutdown

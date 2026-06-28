@@ -18,6 +18,7 @@ class Exam(Base):
     institution_name: Mapped[str] = mapped_column(String(500), nullable=False)
     teacher_name: Mapped[str] = mapped_column(String(255), nullable=False)
     exam_date: Mapped[date] = mapped_column(Date, nullable=False)
+    modality: Mapped[str | None] = mapped_column(String(255), nullable=True)
     instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
 

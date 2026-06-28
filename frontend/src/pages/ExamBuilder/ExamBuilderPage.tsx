@@ -20,6 +20,7 @@ const schema = z.object({
   institution_name: z.string().min(1, 'La institución es requerida'),
   teacher_name: z.string().min(1, 'El docente es requerido'),
   exam_date: z.string().min(1, 'La fecha es requerida'),
+  modality: z.string().optional(),
   instructions: z.string().optional(),
   config: z.object({
     total_topics: z.number().min(1, 'Mínimo 1 tema'),
@@ -52,6 +53,7 @@ export function ExamBuilderPage() {
       institution_name: '',
       teacher_name: '',
       exam_date: '',
+      modality: 'ORDINARIO',
       instructions: '',
       config: { total_topics: 1, questions_per_topic: 10, total_questions: 10, version_count: 4 },
       topics: [{ topic_id: 0, questions_count: 10 }],
@@ -68,6 +70,7 @@ export function ExamBuilderPage() {
         institution_name: exam.institution_name,
         teacher_name: exam.teacher_name,
         exam_date: exam.exam_date,
+        modality: exam.modality ?? 'ORDINARIO',
         instructions: exam.instructions ?? '',
         config: exam.config
           ? {
@@ -101,6 +104,7 @@ export function ExamBuilderPage() {
             institution_name: data.institution_name,
             teacher_name: data.teacher_name,
             exam_date: data.exam_date,
+            modality: data.modality,
             instructions: data.instructions,
           },
         })
@@ -111,6 +115,7 @@ export function ExamBuilderPage() {
           institution_name: data.institution_name,
           teacher_name: data.teacher_name,
           exam_date: data.exam_date,
+          modality: data.modality,
           instructions: data.instructions,
           config: data.config,
           topics: data.topics,
@@ -169,6 +174,16 @@ export function ExamBuilderPage() {
                 type="date"
                 error={errors.exam_date?.message}
                 {...register('exam_date')}
+              />
+              <Select
+                label="Modalidad"
+                options={[
+                  { value: 'ORDINARIO', label: 'Ordinario' },
+                  { value: 'EXTRAORDINARIO', label: 'Extraordinario' },
+                  { value: 'ESPECIAL', label: 'Especial' },
+                  { value: 'REZAGADO', label: 'Rezagado' },
+                ]}
+                {...register('modality')}
               />
             </div>
             <div className="mt-4">

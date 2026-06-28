@@ -43,6 +43,7 @@ class ExamCreate(BaseModel):
     institution_name: str
     teacher_name: str
     exam_date: date
+    modality: str | None = None
     instructions: str | None = None
     config: ExamConfigCreate
     topics: list[ExamTopicCreate]
@@ -69,6 +70,7 @@ class ExamUpdate(BaseModel):
     institution_name: str | None = None
     teacher_name: str | None = None
     exam_date: date | None = None
+    modality: str | None = None
     instructions: str | None = None
 
 
@@ -128,6 +130,7 @@ class ExamResponse(BaseModel):
     institution_name: str
     teacher_name: str
     exam_date: date
+    modality: str | None
     instructions: str | None
     created_at: datetime
     config: ExamConfigResponse | None = None

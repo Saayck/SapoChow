@@ -46,6 +46,7 @@ async def create_exam(data: ExamCreate, db: AsyncSession) -> Exam:
         institution_name=data.institution_name,
         teacher_name=data.teacher_name,
         exam_date=data.exam_date,
+        modality=data.modality,
         instructions=data.instructions,
     )
     db.add(exam)
