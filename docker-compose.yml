@@ -36,6 +36,7 @@ services:
     volumes:
       - api_uploads:/app/uploads
       - api_pdfs:/app/pdfs
+      - tectonic_cache:/root/.cache/tectonic
     depends_on:
       db:
         condition: service_healthy
@@ -61,3 +62,4 @@ volumes:
   pg_data:
   api_uploads:
   api_pdfs:
+  tectonic_cache:
