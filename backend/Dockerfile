@@ -25,6 +25,30 @@ COPY . .
 
 RUN mkdir -p /app/uploads /app/pdfs /app/data
 
+# Pre-warm Tectonic: descarga todos los paquetes LaTeX en build time
+RUN printf '\
+\\documentclass[10pt,a4paper]{article}\n\
+\\usepackage[utf8]{inputenc}\n\
+\\usepackage[T1]{fontenc}\n\
+\\usepackage[spanish]{babel}\n\
+\\usepackage{amsmath,amssymb,amsfonts}\n\
+\\usepackage{graphicx}\n\
+\\usepackage{enumitem}\n\
+\\usepackage{fancyhdr}\n\
+\\usepackage{lastpage}\n\
+\\usepackage{multicol}\n\
+\\usepackage{microtype}\n\
+\\begin{document}\n\
+\\begin{multicols}{2}\n\
+Columna 1\n\
+\\columnbreak\n\
+Columna 2\n\
+\\end{multicols}\n\
+\\end{document}\n\
+' > /tmp/warmup.tex \
+    && tectonic /tmp/warmup.tex \
+    && rm -f /tmp/warmup.tex /tmp/warmup.pdf
+
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
