@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, StreamingResponse
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -156,7 +157,11 @@ async def download_version_pdf(version_id: int, db: AsyncSession = Depends(get_d
     if not version:
         raise NotFoundError("ExamVersion", version_id)
 
-    pdf_path = await generate_pdf(version_id, db)
+    try:
+        pdf_path = await generate_pdf(version_id, db)
+    except Exception as exc:
+        logger.error(f"PDF generation failed for version {version_id}: {exc}")
+        raise
 
     return FileResponse(
         path=str(pdf_path),
