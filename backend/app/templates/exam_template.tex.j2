@@ -140,12 +140,12 @@
   ((*- for col in range(cols) *))
     ((*- set idx = row + col * rows *))
     ((*- if idx < total *))
-      \textbf{((( answer_key[idx].number )))} & ((( answer_key[idx].letter )))%
+      \textbf{((( answer_key[idx].number )))} & ((( answer_key[idx].letter )))
     ((*- else *))
-      &%
+      &
     ((*- endif *))
     ((*- if not loop.last *)) & ((*- endif *))
-  ((*- endfor *)) \\
+  ((*- endfor *))\\
 \hline
 ((*- endfor *))
 \end{tabular}
